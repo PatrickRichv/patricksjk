@@ -12,5 +12,5 @@
 // (acceso total a la base de datos). Esa sí es secreta de verdad: JAMÁS
 // debe escribirse en este archivo, ni en ningún otro que se suba a git o
 // se le entregue al cliente sin advertirle expresamente.
-export const SUPABASE_URL = 'https://xxlwtlenmhosvmfcpzfp.supabase.co';
-export const SUPABASE_ANON_KEY = 'sb_publishable_8HlJe-j7GgiaPqwD1fzVPg_vzTOn8Ft';
+export const SUPABASE_URL = 'https://nsdapwjthioddktnavfy.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_UPUElx83C1-0l2040opeXQ_2bd8msVi';
