@@ -14,8 +14,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// La fila de la ruleta (ver js/ruleta.js) nunca debe aparecer como "oferta
-// destacada" genérica — ya tiene su propio banner en Inicio.
+// La fila de la ruleta (ver js/ruleta.js) también puede marcarse como
+// "oferta destacada" desde el panel de admin — mientras la ruleta esté
+// ACTIVA, cargarOfertaDestacada la oculta de todos modos (ya tiene su
+// propio banner en Inicio, ver más abajo); solo se ve como tarjeta cuando
+// está desactivada pero sigue siendo la elegida.
 const CODIGO_RULETA = 'ruleta';
 
 function crearTarjetaOferta(oferta) {
@@ -78,17 +81,6 @@ async function cargarOfertas() {
 }
 
 /**
- * De una lista de ofertas (ya filtrada por `activa`), devuelve la primera
- * que no sea la fila especial de la ruleta — o null si no queda ninguna.
- */
-function primeraNoRuleta(ofertas) {
-  const validas = (ofertas || []).filter(function (o) {
-    return o.codigo !== CODIGO_RULETA;
-  });
-  return validas.length > 0 ? validas[0] : null;
-}
-
-/**
  * Pinta en Inicio la UNA oferta que debe destacarse: primero busca la que
  * el admin marcó como `destacada` (desde el panel de admin); si no hay ninguna (o la
  * consulta falla), usa como respaldo la oferta activa más antigua — así
@@ -135,8 +127,8 @@ async function cargarOfertaDestacada() {
 
     if (errorDestacada) {
       console.error('No se pudo cargar la oferta destacada:', errorDestacada);
-    } else {
-      oferta = primeraNoRuleta(destacadas);
+    } else if (destacadas && destacadas.length > 0) {
+      oferta = destacadas[0];
     }
 
     if (!oferta) {
@@ -151,12 +143,18 @@ async function cargarOfertaDestacada() {
       if (errorPrimera) {
         console.error('No se pudo cargar ninguna oferta de respaldo:', errorPrimera);
       } else {
-        const ordenadas = (primeras || []).slice().sort(function (a, b) {
+        // Sin elección explícita del admin, el respaldo automático sigue sin
+        // considerar la ruleta — no tiene sentido destacarla sola sin que el
+        // admin lo haya decidido a propósito.
+        const candidatas = (primeras || []).filter(function (o) {
+          return o.codigo !== CODIGO_RULETA;
+        });
+        const ordenadas = candidatas.slice().sort(function (a, b) {
           const fechaA = a.creado_en || a.created_at || '';
           const fechaB = b.creado_en || b.created_at || '';
           return fechaA < fechaB ? -1 : fechaA > fechaB ? 1 : 0;
         });
-        oferta = primeraNoRuleta(ordenadas);
+        oferta = ordenadas.length > 0 ? ordenadas[0] : null;
       }
     }
 

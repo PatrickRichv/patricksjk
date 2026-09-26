@@ -8,7 +8,7 @@
 // Hoy tiene el mismo número que ya usa el resto del sitio (el que aparece
 // en "Nosotros" de Inicio y en el proyecto en React) — si el bar cambia de
 // número algún día, este es el único lugar del proyecto que hay que tocar.
-const NUMERO_WHATSAPP_BAR = '573146032055';
+const NUMERO_WHATSAPP_BAR = '573127191715';
 
 /**
  * Reemplaza los caracteres que arman etiquetas HTML (<, >, &) por su

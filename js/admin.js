@@ -126,26 +126,22 @@ function crearFilaOferta(oferta) {
   const botonBorrar = fila.querySelector('.admin-borrar-btn');
   const botonDestacar = fila.querySelector('.admin-destacar-btn');
 
+  // La ruleta ahora compite igual que cualquier otra oferta por el puesto
+  // de "destacada" (ver cargarOfertaDestacada en ofertas.js: si la ruleta
+  // está activa, su propio banner sigue teniendo prioridad y la tarjeta de
+  // oferta destacada se oculta igual, así que marcarla aquí solo importa
+  // mientras la ruleta esté desactivada).
+  botonDestacar.disabled = oferta.destacada === true;
+  botonDestacar.textContent = oferta.destacada ? '★ Destacada' : 'Destacar en Inicio';
+  botonDestacar.addEventListener('click', function () {
+    destacarOferta(oferta.id);
+  });
+
   if (esRuleta) {
-    // La ruleta ya tiene su propio banner en Inicio — no tiene sentido que
-    // además compita por ser "la oferta destacada" genérica. Antes este
-    // botón se quitaba del todo con .remove(), pero eso dejaba la fila de
-    // la ruleta con menos botones que las demás y se veía chueca/asimétrica
-    // frente al resto de la lista — se deja en el DOM (con
-    // "invisible-reserva-espacio", ver esa clase en estilos.css) para que
-    // ocupe el mismo espacio sin poder usarse ni verse.
-    botonDestacar.disabled = true;
-    botonDestacar.classList.add('invisible-reserva-espacio');
-    botonDestacar.tabIndex = -1;
     botonBorrar.disabled = true;
     botonBorrar.setAttribute('aria-label', 'La oferta de la ruleta no se puede borrar');
     botonBorrar.title = 'La ruleta no se puede borrar — solo activar o desactivar';
   } else {
-    botonDestacar.disabled = oferta.destacada === true;
-    botonDestacar.textContent = oferta.destacada ? '★ Destacada' : 'Destacar en Inicio';
-    botonDestacar.addEventListener('click', function () {
-      destacarOferta(oferta.id);
-    });
     botonBorrar.addEventListener('click', function () {
       borrarOferta(oferta.id, oferta.titulo);
     });

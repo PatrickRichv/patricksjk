@@ -114,14 +114,6 @@ main {
   background: var(--amber);
   box-shadow: 0 0 5px var(--amber);
 }
-.openpill-closed {
-  color: var(--cream-dim);
-  border-color: var(--border);
-}
-.openpill-closed .dot {
-  background: var(--cream-dim);
-  box-shadow: none;
-}
 
 /* Topbar de dos filas dentro del mismo bloque anclado (logo/título arriba,
    subtabs abajo) — usado por el admin (Ofertas/Pedidos/Información) y por
@@ -743,14 +735,6 @@ main {
 }
 .admin-toggle-btn {
   width: 84px;
-}
-/* Reserva el mismo espacio que ocupa un botón normal, pero sin mostrarlo
-   ni dejarlo interactuar — usado en la fila de la ruleta, que no tiene
-   botón de "Destacar en Inicio" (ver crearFilaOferta en admin.js), para
-   que esa fila no quede con menos botones (y por lo tanto asimétrica)
-   frente a las demás. */
-.invisible-reserva-espacio {
-  visibility: hidden;
 }
 .admin-destacar-btn:not(:disabled):hover {
   border-color: var(--amber);
