@@ -1,42 +1,13 @@
-// Panel de administrador — Ofertas, Pedidos e Información, SIN login
-// (decisión explícita del dueño del proyecto, con el riesgo ya advertido:
-// cualquiera que tenga esta URL puede leer los pedidos de los clientes y
-// agregar, activar/desactivar o borrar ofertas). La única barrera hoy es
-// que la página vive en una URL larga y al azar sin ningún link público
-// hacia ella (ver panel-72f9eb83e6cf1.html) — eso NO protege los datos en
-// sí: la llave pública de Supabase (config-supabase.js) es visible en el
-// código de cualquier página del sitio, así que alguien con conocimientos
-// técnicos puede leer/escribir en las tablas directamente sin pasar por
-// aquí. Si en algún momento se agrega un login real (Supabase Auth), este
-// archivo es el que hay que ajustar para que use la sesión del usuario en
-// vez de la llave anónima directa, y ahí sí se puede cerrar RLS de verdad.
-//
-// Módulo de JavaScript (type="module") por la misma razón que ruleta.js y
-// ofertas.js: así se puede usar `import` para traer el cliente de Supabase
-// desde un CDN sin agregar un build step al proyecto. formatPrice viene de
-// productos.js (cargado antes que este módulo en panel-72f9eb83e6cf1.html).
+// Panel de administrador — Ofertas, Pedidos e Información.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config-supabase.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// La fila de la ruleta (ver js/ruleta.js → ruletaEstaActiva) se identifica
-// por este código fijo. Se puede activar/desactivar como cualquier otra
-// oferta, pero no se puede borrar — sin ella, la ruleta quedaría rota en
-// todo el sitio, no solo "sin mostrarse".
 const CODIGO_RULETA = 'ruleta';
 
-// Con el tiempo la tabla `pedidos` puede acumular muchísimas filas — listar
-// TODAS de una vez cada vez que se abre el panel es lento y poco útil, así
-// que por defecto solo se piden los de la última semana. "hoy" es la
-// medianoche de hoy en la hora del navegador; "semana" y "mes" son 7 y 30
-// días atrás desde este momento.
 let filtroPedidosActual = 'semana';
 let filtroInfoActual = 'semana';
-
-// Por defecto se muestran solo los pendientes — al abrir Pedidos, lo
-// primero que importa es lo que todavía falta por confirmar/entregar, no
-// el historial completo.
 let filtroEstadoPedidosActual = 'pendiente';
 
 function calcularFechaDesdeFiltro(filtro) {
@@ -50,12 +21,10 @@ function calcularFechaDesdeFiltro(filtro) {
   if (filtro === 'mes') {
     return new Date(ahora.getTime() - 30 * 24 * 60 * 60 * 1000);
   }
-  return null; // 'todos' — sin filtro de fecha
+  return null;
 }
 
-// ============================================================
-// Cambiar entre "Ofertas", "Pedidos" e "Información"
-// ============================================================
+// ---- Cambiar entre Ofertas, Pedidos e Información ----
 const TITULOS_SECCION = { ofertas: 'Ofertas', pedidos: 'Pedidos', info: 'Información' };
 
 function cambiarSeccion(seccion) {
@@ -72,9 +41,7 @@ function cambiarSeccion(seccion) {
   if (seccion === 'info') cargarInformacion();
 }
 
-// ============================================================
-// Ofertas (agregar / activar / desactivar / borrar)
-// ============================================================
+// ---- Ofertas ----
 function crearFilaOferta(oferta) {
   const esRuleta = oferta.codigo === CODIGO_RULETA;
 
@@ -113,9 +80,6 @@ function crearFilaOferta(oferta) {
   badge.textContent = estaActiva ? 'Activa' : 'Inactiva';
   badge.className = 'oferta-badge' + (estaActiva ? ' es-activa' : '');
 
-  // Un solo botón que hace lo contrario del estado actual, en vez de dos
-  // botones activar/desactivar (uno siempre deshabilitado) — la insignia de
-  // arriba ya dice el estado, este botón solo dice la acción a realizar.
   const botonToggle = fila.querySelector('.admin-toggle-btn');
   botonToggle.textContent = estaActiva ? 'Desactivar' : 'Activar';
   botonToggle.className = 'admin-toggle-btn ' + (estaActiva ? 'es-desactivar' : 'es-activar');
@@ -126,11 +90,7 @@ function crearFilaOferta(oferta) {
   const botonBorrar = fila.querySelector('.admin-borrar-btn');
   const botonDestacar = fila.querySelector('.admin-destacar-btn');
 
-  // La ruleta ahora compite igual que cualquier otra oferta por el puesto
-  // de "destacada" (ver cargarOfertaDestacada en ofertas.js: si la ruleta
-  // está activa, su propio banner sigue teniendo prioridad y la tarjeta de
-  // oferta destacada se oculta igual, así que marcarla aquí solo importa
-  // mientras la ruleta esté desactivada).
+  // la ruleta también puede ser la destacada, como cualquier otra oferta
   botonDestacar.disabled = oferta.destacada === true;
   botonDestacar.textContent = oferta.destacada ? '★ Destacada' : 'Destacar en Inicio';
   botonDestacar.addEventListener('click', function () {
@@ -155,10 +115,6 @@ async function cargarOfertas() {
   const vacio = document.getElementById('admin-ofertas-vacio');
   if (!lista || !vacio) return;
 
-  // Sin .order() a propósito — mismo motivo que en cargarPedidos: pedir que
-  // ordene por una columna cuyo nombre exacto no conocemos con certeza
-  // (creado_en, created_at...) hace fallar TODA la consulta si no existe.
-  // Se trae todo sin ordenar y se ordena aquí mismo.
   const { data, error } = await supabase.from('ofertas').select('*');
 
   if (error) {
@@ -186,11 +142,6 @@ async function cargarOfertas() {
 }
 
 async function alternarOferta(id, nuevaActiva) {
-  // El ".select()" al final es lo que permite detectar el caso raro pero
-  // real de RLS: si una política de Supabase bloquea la fila, el update NO
-  // da error — simplemente actualiza 0 filas en silencio. Sin pedir de
-  // vuelta la fila actualizada, no había forma de distinguir "sí funcionó"
-  // de "RLS lo bloqueó calladito".
   const { data, error } = await supabase.from('ofertas').update({ activa: nuevaActiva }).eq('id', id).select();
 
   if (error) {
@@ -203,12 +154,7 @@ async function alternarOferta(id, nuevaActiva) {
     return;
   }
 
-  // Cada vez que la ruleta se desactiva (desde aquí o automáticamente al
-  // llegar al máximo de jugadas — ver MAX_JUGADAS_RULETA en ruleta.js) se
-  // reinicia la tabla dispositivos_ruleta, para que la próxima vez que se
-  // active todos los dispositivos puedan volver a jugar. Sin esto, un
-  // dispositivo que ya jugó en un ciclo anterior de la ruleta se quedaba
-  // bloqueado para siempre, aunque la ruleta llevara apagada mucho tiempo.
+  // al apagar la ruleta se reinicia dispositivos_ruleta para que todos puedan volver a jugar
   const ofertaActualizada = data[0];
   if (ofertaActualizada.codigo === CODIGO_RULETA && !nuevaActiva) {
     const { error: errorReinicio } = await supabase.from('dispositivos_ruleta').delete().not('device_id', 'is', null);
@@ -221,13 +167,6 @@ async function alternarOferta(id, nuevaActiva) {
   cargarOfertas();
 }
 
-/**
- * Marca esta oferta como la destacada de Inicio. Solo puede haber una a la
- * vez, así que primero se les quita el destacado a todas las demás y
- * después se enciende esta — dos pasos porque es más simple de leer que
- * armar una sola consulta condicional, y aquí no hay tantas ofertas como
- * para que la diferencia de rendimiento importe.
- */
 async function destacarOferta(id) {
   const { error: errorLimpiar } = await supabase.from('ofertas').update({ destacada: false }).neq('id', id);
   if (errorLimpiar) {
@@ -267,9 +206,7 @@ async function borrarOferta(id, titulo) {
   cargarOfertas();
 }
 
-// ============================================================
-// Pedidos (ver / confirmar / volver a pendiente)
-// ============================================================
+// ---- Pedidos ----
 function formatearFecha(fechaTexto) {
   if (!fechaTexto) return '';
   const fecha = new Date(fechaTexto);
@@ -277,12 +214,6 @@ function formatearFecha(fechaTexto) {
   return fecha.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-/**
- * La columna `productos` debería llegar ya como un array (columna jsonb en
- * Supabase), pero si en algún momento quedó guardada como texto plano
- * (columna tipo texto en vez de jsonb) esto la deja utilizable en vez de
- * mostrar el pedido vacío sin ninguna pista de por qué.
- */
 function obtenerProductosPedido(pedido) {
   if (Array.isArray(pedido.productos)) return pedido.productos;
   if (typeof pedido.productos === 'string') {
@@ -370,12 +301,6 @@ async function cargarPedidos() {
   cargando.hidden = false;
   vacio.hidden = true;
 
-  // Sin .order() a propósito: no sabemos con certeza el nombre exacto de
-  // la columna de fecha en tu tabla `pedidos` (created_at, creado_en...) —
-  // pedir que ordene por una columna que no existe hace fallar TODA la
-  // consulta. Se trae todo sin ordenar y se ordena aquí mismo, probando
-  // los nombres más probables (ver formatearFecha más abajo). Los dos
-  // filtros (fecha y estado) sí se mandan al servidor, para no traer de más.
   let consulta = supabase.from('pedidos').select('*');
   const desde = calcularFechaDesdeFiltro(filtroPedidosActual);
   if (desde) {
@@ -434,7 +359,6 @@ async function alternarConfirmacionPedido(id, nuevoConfirmado) {
   cargarPedidos();
 }
 
-/** Borra el pedido de verdad de la tabla `pedidos` — no es un estado, desaparece por completo. */
 async function borrarPedido(id, nombre) {
   const confirmado = window.confirm('¿Borrar el pedido de "' + nombre + '"? Esta acción no se puede deshacer.');
   if (!confirmado) return;
@@ -453,15 +377,7 @@ async function borrarPedido(id, nombre) {
   cargarPedidos();
 }
 
-// ============================================================
-// Información (ventas confirmadas — para análisis, no para operar)
-// ============================================================
-/**
- * Trae los pedidos CONFIRMADOS del rango de fechas elegido y calcula todo
- * en el navegador (no hay tantos pedidos en un bar como para que esto
- * pese) — un pedido "pendiente" todavía no es una venta real, así que
- * nunca cuenta aquí, sin importar el filtro de fecha.
- */
+// ---- Información (ventas confirmadas) ----
 async function cargarInformacion() {
   const cargando = document.getElementById('admin-info-cargando');
   const vacio = document.getElementById('admin-info-vacio');
@@ -500,10 +416,6 @@ async function cargarInformacion() {
     return !!pedido.codigo_premio;
   }).length;
 
-  // Cuenta unidades por nombre de producto (con el sabor incluido en la
-  // etiqueta, para no mezclar "Electrolit Uva" con "Electrolit Fresa Kiwi"
-  // bajo un mismo conteo) sumando los productos de todos los pedidos del
-  // rango.
   const unidadesPorProducto = {};
   let totalUnidades = 0;
   data.forEach(function (pedido) {
@@ -538,12 +450,7 @@ async function cargarInformacion() {
   contenido.hidden = false;
 }
 
-// ============================================================
-// Detalle de un pedido (modal: productos completos + código de premio)
-// ============================================================
-// Mismo patrón de modal casero que .modal-vaciar en carrito.js: se puede
-// cerrar con Escape, clic en el fondo o el botón X, y atrapa el foco de
-// teclado mientras está abierto.
+// ---- Detalle de un pedido ----
 let elementoConFocoAntesDelDetalle = null;
 
 function abrirDetallePedido(pedido) {
@@ -585,9 +492,7 @@ function cerrarDetallePedido() {
   if (elementoConFocoAntesDelDetalle) elementoConFocoAntesDelDetalle.focus();
 }
 
-// ============================================================
-// Utilidades compartidas
-// ============================================================
+// ---- Utilidades ----
 function mostrarMensaje(texto, esError) {
   const mensaje = document.getElementById('admin-mensaje');
   if (!mensaje) return;

@@ -1,16 +1,9 @@
-// Lógica específica de la pantalla Menú: sub-tabs de categoría, buscador y
-// pintado de las tarjetas de producto.
-//
-// Tocar una tarjeta abre la ficha del producto (ver ficha.js). El botón "+"
-// agrega directo al carrito (ver carrito.js) — salvo que el producto tenga
-// sabores para elegir, en cuyo caso también abre la ficha, porque no se
-// puede agregar sin que el cliente elija uno primero.
+// Pantalla del Menú: categorías, buscador y tarjetas de producto.
 
 var categoriaActiva = categorias[0];
 var busqueda = '';
 
-// Quita tildes/acentos y pasa a minúsculas, para comparar texto sin que
-// importe cómo lo haya escrito el cliente (con o sin acentos, mayúsculas...).
+// quita tildes para buscar sin importar cómo se escriba
 function normalizarTexto(texto) {
   var resultado = '';
   var normalizado = texto.normalize('NFD');
@@ -69,16 +62,8 @@ var ICONO_MAS =
     '<path d="M12 5v14M5 12h14" />' +
   '</svg>';
 
-/**
- * Botón "+" (para agregar la primera unidad) o control "− cantidad +" (si
- * el producto ya está en el carrito), para que el cliente no tenga que
- * tocar "+" repetidas veces si quiere, por ejemplo, 5 cervezas.
- *
- * Los productos con sabores (ver productos.js) se quedan con un solo botón
- * "+" que abre la ficha — ahí es donde se elige a cuál sabor sumarle o
- * restarle una unidad, un contador aquí no sabría a cuál sabor aplicarle
- * el cambio.
- */
+// botón "+" o control "− cantidad +" si ya está en el carrito.
+// si el producto tiene sabores se queda con el "+" simple, que abre la ficha.
 function crearControlCantidad(producto) {
   var disponible = producto.estado === 'disponible';
   var requiereSabor = Boolean(producto.sabores && producto.sabores.length);
@@ -206,13 +191,8 @@ function seleccionarCategoria(categoria) {
   renderizarProductos();
 }
 
-/**
- * Usadas por el swipe de pantalla (js/navegacion.js): mueven la categoría
- * activa una posición adelante/atrás dentro de `categorias` y devuelven
- * true si lo lograron. Si ya se está en la última/primera categoría,
- * devuelven false para que quien llama sepa que debe cambiar de pantalla
- * en su lugar (a Carrito o a Inicio).
- */
+// usadas por el swipe (navegacion.js): mueven la categoría activa y avisan
+// con true/false si ya se llegó al final, para que el swipe cambie de pantalla.
 function avanzarCategoria() {
   var indice = categorias.indexOf(categoriaActiva);
   var siguiente = categorias[indice + 1];

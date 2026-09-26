@@ -1,21 +1,4 @@
-// Datos de ejemplo — reemplazar por una fuente de datos real (backend) más
-// adelante. Mismo catálogo que el proyecto en React (mismos ids, nombres,
-// precios, categorías y estados), solo que aquí es un arreglo plano cargado
-// directo con una etiqueta <script>, en vez de un "import" — este proyecto
-// no usa módulos ES ni build step, así que cualquier archivo .js que se
-// cargue antes en el HTML deja sus variables disponibles para los que
-// vienen después (por eso el orden de los <script> en cada .html importa).
-//
-// Forma de cada producto:
-// {
-//   id: string,
-//   nombre: string,
-//   precio: number,
-//   categoria: string,
-//   estado: 'disponible' | 'agotado',
-//   sabores: string[] (opcional — si existe, el cliente debe elegir uno; no se usa todavía),
-//   imagen: string (ruta relativa a la carpeta productos/, usada por el Menú y el Inicio)
-// }
+// Catálogo de productos para domicilio.
 
 const productos = [
   // Cervezas — six packs
@@ -37,9 +20,7 @@ const productos = [
   { id: 'cerveza-budweiser', nombre: 'Budweiser', precio: 5000, categoria: 'Cervezas', estado: 'disponible', imagen: 'productos/cerveza-budweiser.webp' },
   { id: 'cerveza-tecate', nombre: 'Tecate', precio: 4000, categoria: 'Cervezas', estado: 'disponible', imagen: 'productos/cerveza-tecate.webp' },
 
-  // Aperitivos — cada uno aparece UNA sola vez y el cliente elige el sabor
-  // en la ficha del producto (mismo patrón que Electrolit/Gatorade en
-  // Bebidas), en vez de repetir el producto una vez por sabor.
+  // Aperitivos — el sabor se elige en la ficha del producto
   { id: 'aperitivo-cuates', nombre: 'Cuates', precio: 6000, categoria: 'Aperitivos', estado: 'disponible', sabores: ['Rojo', 'Amarillo', 'Verde'], imagen: 'productos/aperitivo-cuates-rojo.webp' },
   { id: 'aperitivo-smirnoff', nombre: 'Smirnoff', precio: 10000, categoria: 'Aperitivos', estado: 'disponible', sabores: ['Manzana Verde', 'Original'], imagen: 'productos/aperitivo-smirnoff-manzana-verde.webp' },
   { id: 'aperitivo-redds', nombre: "Redd's", precio: 5000, categoria: 'Aperitivos', estado: 'disponible', sabores: ['Rose', 'Verde'], imagen: 'productos/aperitivo-redds-rose.webp' },
@@ -90,8 +71,6 @@ const productos = [
   { id: 'alcohol-ron-esencial-media', nombre: 'Ron Esencial Media', precio: 38000, categoria: 'Alcohol', estado: 'disponible', imagen: 'productos/alcohol-ron-esencial-media.webp' },
 ];
 
-// Categorías derivadas del catálogo (en el orden en que aparecen), para no
-// mantener una lista aparte que se pueda desincronizar de los productos.
 const categorias = [];
 productos.forEach(function (producto) {
   if (categorias.indexOf(producto.categoria) === -1) {
@@ -99,7 +78,6 @@ productos.forEach(function (producto) {
   }
 });
 
-// Formato de precio compartido por todas las pantallas que muestran precios.
 function formatPrice(precio) {
   return '$' + precio.toLocaleString('es-CO');
 }

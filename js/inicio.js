@@ -1,7 +1,4 @@
-// Lógica específica de la pantalla Inicio: carrusel de "Más pedidos" y
-// grilla de categorías. Tocar una tarjeta del carrusel abre la ficha del
-// producto (ver ficha.js) — igual que en el proyecto React, el carrusel de
-// Inicio no tiene botón "+" propio, solo abre la ficha.
+// Pantalla de Inicio: carrusel de "Más pedidos" y grilla de categorías.
 
 var FEATURED_COUNT = 5;
 
@@ -91,20 +88,11 @@ function pintarCategorias() {
   });
 }
 
-/**
- * entrega.js redirige aquí con "?pedido=enviado" justo después de mandar el
- * pedido por WhatsApp — se muestra un toast breve de confirmación y se
- * limpia la URL (con replaceState) para que recargar la página no lo
- * vuelva a mostrar.
- */
+// entrega.js redirige aquí con "?pedido=enviado" al terminar un pedido
 function avisarSiVieneDeUnPedido() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('pedido') !== 'enviado') return;
 
-  // "&guardado=no" lo agrega entrega.js cuando guardarPedidoSupabase falló
-  // (ver el comentario allá) — el pedido por WhatsApp sí llegó, pero no
-  // quedó guardado para el panel de admin, así que vale la pena decirlo en
-  // vez de que el pedido "desaparezca" sin ninguna explicación.
   if (params.get('guardado') === 'no') {
     mostrarToast('Pedido enviado por WhatsApp, pero no se pudo guardar en el sistema. Avisa al negocio por si acaso.');
   } else {
@@ -113,17 +101,7 @@ function avisarSiVieneDeUnPedido() {
   window.history.replaceState({}, '', 'tienda1.html');
 }
 
-/**
- * Muestra el banner de la ruleta solo si el admin la tiene activa (la
- * "oferta" con código 'ruleta' en Supabase — ver ruletaEstaActiva en
- * js/ruleta.js y el panel de admin). Empieza oculto en el HTML a propósito, para
- * no mostrarlo un instante y esconderlo justo después mientras se confirma
- * con Supabase.
- *
- * Sin importar cómo termine, avisa con marcarPromoCheckListo (definida en
- * js/navegacion.js) — es una de las dos consultas que #promo-skeleton
- * espera antes de dejar de reservar espacio en la pantalla.
- */
+// muestra el banner de la ruleta solo si el admin la tiene activa
 async function actualizarBannerRuleta() {
   const banner = document.getElementById('roulette-banner');
   if (!banner || typeof ruletaEstaActiva !== 'function') {

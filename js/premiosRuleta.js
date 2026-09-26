@@ -1,23 +1,5 @@
-// Mismos premios y mismo diseño de la ruleta que el proyecto en React (ver
-// src/data/premiosRuleta.js ahí) — se copian tal cual, sin inventar pesos
-// nuevos. Resumen del diseño (la explicación completa está en ese archivo):
-//
-// - Hay DOS ruletas de 12 premios cada una (A y B). Cuál le toca al
-//   cliente se sortea 50/50 cada vez que se abre la ruleta (ver
-//   elegirRuletaAleatoria en ruleta.js) — así no siempre es la misma.
-// - La probabilidad de cada premio depende de cuántas veces se repite en
-//   su lista (las 12 casillas de una ruleta tienen el mismo tamaño), salvo
-//   los dos premios marcados `raro: true` ($30.000 y 1 Six): además de
-//   tener una sola casilla, ruleta.js les aplica un sorteo adicional que
-//   reduce su probabilidad real a 1 de cada 5 veces que el azar cae ahí.
-// - `codigo` es el código corto de 3 letras que se usa en el mensaje de
-//   WhatsApp en vez del texto completo del premio (ver generarCodigoPremio
-//   en ruleta.js) — así, aunque el cliente edite el mensaje antes de
-//   enviarlo, no puede inventarse un premio sin adivinar un código válido.
-//   `codigo: null` en "Perdiste" y "Sigue intentando" porque ninguno de
-//   los dos es un premio real que deba codificarse. Los premios repetidos
-//   (por ejemplo "Ganaste 1 Poker" aparece dos veces en la ruleta A) usan
-//   el mismo código — son la misma casilla de premio, solo se repite.
+// Premios de la ruleta. Dos ruletas de 12 casillas (A y B), se sortea 50/50 cuál toca.
+// El código de 3 letras es el que se manda por WhatsApp en vez del texto completo.
 export const PREMIOS_RULETA_A = [
   { id: 'a1', texto: 'Ganaste 1 Poker', codigo: '1PK' },
   { id: 'a2', texto: 'Perdiste', codigo: null },

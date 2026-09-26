@@ -1,29 +1,9 @@
-// Estado del carrito de compras — funciones simples de JS plano, sin
-// clases ni Context/reducer (eso es un patrón de React, aquí no aplica).
-//
-// ¿Por qué localStorage? En React, el carrito vivía solo en memoria (un
-// estado de la app) porque la página nunca se recargaba de verdad: React
-// controla la navegación entre pantallas sin volver a cargar el HTML. Aquí
-// cada pantalla es un archivo .html distinto — ir de Menú a Carrito SÍ
-// recarga el navegador por completo, así que cualquier variable normal se
-// perdería en cada cambio de pantalla (o si el cliente cierra el navegador
-// a medio pedido). localStorage es memoria del navegador que sobrevive a
-// recargar la página y a cerrar/abrir el navegador, así que guardamos ahí
-// el carrito cada vez que cambia, y lo volvemos a leer apenas carga
-// cualquier página.
+// Carrito de compras, guardado en localStorage para que sobreviva entre páginas.
 
 const CARRITO_STORAGE_KEY = 'patricksjk_carrito';
 
-// Se lee UNA vez, al cargar este script, y desde ahí se trabaja siempre
-// sobre esta variable en memoria — no hace falta leer localStorage en cada
-// función, solo hay que recordar escribirlo de nuevo cada vez que cambia.
 let itemsCarrito = cargarCarritoDesdeStorage();
 
-/**
- * Lee el carrito guardado en localStorage. Si no hay nada guardado (primera
- * visita) o el dato guardado está corrupto, empieza con un carrito vacío en
- * vez de romper la página.
- */
 function cargarCarritoDesdeStorage() {
   const guardado = localStorage.getItem(CARRITO_STORAGE_KEY);
   if (!guardado) return [];
@@ -35,30 +15,10 @@ function cargarCarritoDesdeStorage() {
   }
 }
 
-/** Vuelve a escribir el carrito actual en localStorage, como texto JSON
- * (localStorage solo puede guardar strings, por eso JSON.stringify). */
 function guardarCarritoEnStorage() {
   localStorage.setItem(CARRITO_STORAGE_KEY, JSON.stringify(itemsCarrito));
 }
 
-/**
- * Agrega un producto al carrito (o le suma `cantidad` a la fila si ya
- * estaba). `producto` puede ser un producto de productos.js (con más
- * campos) o cualquier objeto que al menos tenga { id, nombre, precio }; si
- * tiene `sabor`, esa fila del carrito queda ligada a ese sabor.
- *
- * `cantidad` (opcional, por defecto 1) permite sumar varias unidades de una
- * sola vez — lo usa la ficha de producto (ver js/ficha.js), donde el
- * cliente elige la cantidad ANTES de agregar en vez de tocar "+" una vez
- * por unidad.
- *
- * Cada fila del carrito tiene su propio `id` (un identificador al azar,
- * distinto del id del producto) — hace falta porque un mismo producto con
- * dos sabores distintos ("Electrolit Uva" y "Electrolit Fresa Kiwi") deben
- * quedar en DOS filas separadas del carrito, no fusionarse en una. El id
- * del producto se guarda aparte, en `productId`, para poder identificar de
- * qué producto se trata sin depender del id de la fila.
- */
 function agregarAlCarrito(producto, cantidad) {
   cantidad = cantidad && cantidad > 0 ? cantidad : 1;
 
@@ -89,11 +49,6 @@ function agregarAlCarrito(producto, cantidad) {
   actualizarVistaDelCarrito(true);
 }
 
-/**
- * Resta 1 a la cantidad de una fila del carrito (identificada por el `id`
- * de la fila, no el del producto). Si llega a 0, la elimina del arreglo
- * por completo (no se queda una fila en "0").
- */
 function quitarDelCarrito(id) {
   const item = itemsCarrito.find(function (i) {
     return i.id === id;
@@ -111,11 +66,6 @@ function quitarDelCarrito(id) {
   actualizarVistaDelCarrito();
 }
 
-/**
- * Cuántas unidades de este producto (con este sabor, si aplica) hay ahora
- * mismo en el carrito. Se usa en el Menú para pintar el control -/+ de cada
- * tarjeta con el número correcto apenas se carga la página.
- */
 function obtenerCantidadEnCarrito(productId, sabor) {
   const item = itemsCarrito.find(function (i) {
     return i.productId === productId && i.sabor === (sabor || undefined);
@@ -123,11 +73,6 @@ function obtenerCantidadEnCarrito(productId, sabor) {
   return item ? item.cantidad : 0;
 }
 
-/**
- * Como quitarDelCarrito, pero identificando la fila por el id del PRODUCTO
- * (y su sabor) en vez del id de la fila — para pantallas como el Menú, que
- * no guardan el id interno de cada fila del carrito.
- */
 function quitarUnidadDeProductoDelCarrito(productId, sabor) {
   const item = itemsCarrito.find(function (i) {
     return i.productId === productId && i.sabor === (sabor || undefined);
@@ -136,28 +81,21 @@ function quitarUnidadDeProductoDelCarrito(productId, sabor) {
   quitarDelCarrito(item.id);
 }
 
-/** Vacía el carrito por completo. */
 function vaciarCarrito() {
   itemsCarrito = [];
   guardarCarritoEnStorage();
-  guardarCodigoPremio(null); // un carrito nuevo no arrastra el premio de una compra anterior
+  guardarCodigoPremio(null);
   actualizarVistaDelCarrito();
 }
 
-/** Devuelve el arreglo actual de items del carrito. */
 function obtenerCarrito() {
   return itemsCarrito;
 }
 
-// ---- Código del premio de la ruleta (Tarea 4) ----
-// El premio no es un producto, así que no vive dentro de itemsCarrito —
-// pero igual necesita sobrevivir a la navegación de carrito.html a
-// entrega.html, por la misma razón que el carrito: cada pantalla es un
-// .html distinto, así que solo localStorage aguanta ese salto.
+// código del premio de la ruleta — también en localStorage para que aguante hasta entrega.html
 const PREMIO_STORAGE_KEY = 'patricksjk_premio_ruleta';
 let codigoPremioActual = localStorage.getItem(PREMIO_STORAGE_KEY) || null;
 
-/** Guarda el código de premio ganado en la ruleta (o lo borra, si se le pasa null/vacío). */
 function guardarCodigoPremio(codigo) {
   codigoPremioActual = codigo || null;
   if (codigoPremioActual) {
@@ -167,27 +105,16 @@ function guardarCodigoPremio(codigo) {
   }
 }
 
-/** Devuelve el código de premio guardado para esta compra, o null si no hay. */
 function obtenerCodigoPremioCarrito() {
   return codigoPremioActual;
 }
 
-/** Suma precio × cantidad de todos los items — el único lugar del proyecto
- * que calcula el subtotal, para no repetir esta cuenta en cada pantalla. */
 function calcularSubtotal() {
   return itemsCarrito.reduce(function (suma, item) {
     return suma + item.precio * item.cantidad;
   }, 0);
 }
 
-/**
- * Punto único que se llama al final de cada función que modifica el
- * carrito, para refrescar cualquier indicador visual que esté en pantalla
- * en ese momento: la lista del propio Carrito, y la insignia con la
- * cantidad sobre el ícono de la tab de abajo (ver actualizarBadgeCarrito en
- * js/navegacion.js). `animarBadge` solo debe ser true cuando se acaba de
- * AGREGAR un producto — quitar o vaciar no necesita el rebote.
- */
 function actualizarVistaDelCarrito(animarBadge) {
   if (typeof renderizarCarrito === 'function') {
     renderizarCarrito();
@@ -197,13 +124,7 @@ function actualizarVistaDelCarrito(animarBadge) {
   }
 }
 
-// ============================================================
-// Pintado de la pantalla Carrito (carrito.html)
-// ============================================================
-// Estas funciones solo hacen algo si los elementos de carrito.html existen
-// en la página actual — en menu.html o tienda1.html simplemente no encuentran
-// nada y no pasa nada, así que es seguro cargar este archivo en todas
-// las pantallas para tener siempre disponibles agregarAlCarrito, etc.
+// ---- Pantalla del carrito ----
 
 function crearFilaCartItem(item) {
   const fila = document.createElement('div');
@@ -233,11 +154,6 @@ function crearFilaCartItem(item) {
   fila.querySelector('.qty-minus').addEventListener('click', function () {
     quitarDelCarrito(item.id);
   });
-  // El botón "+" de una fila que ya está en el carrito reutiliza
-  // agregarAlCarrito con los mismos datos que ya tiene guardados el item
-  // (no necesita volver a consultar productos.js). item.productId || item.id
-  // es por compatibilidad con carritos guardados antes de que existiera el
-  // campo productId — si no está, el id de la fila ya hacía ese papel.
   fila.querySelector('.qty-plus').addEventListener('click', function () {
     agregarAlCarrito({
       id: item.productId || item.id,
@@ -257,8 +173,6 @@ function renderizarCarrito() {
   const lista = document.getElementById('carrito-lista');
   const totalEl = document.getElementById('carrito-total');
   const btnContinuar = document.getElementById('btn-continuar');
-  // Si estos elementos no existen, no estamos en carrito.html — no hay
-  // nada que pintar en esta página.
   if (!vacio || !contenido || !lista || !totalEl) return;
 
   const items = obtenerCarrito();
@@ -280,22 +194,15 @@ function renderizarCarrito() {
   });
 
   totalEl.textContent = formatPrice(calcularSubtotal());
-  // "Continuar pedido" solo tiene sentido si hay al menos un producto.
   if (btnContinuar) btnContinuar.disabled = false;
 
   renderizarSugerencias();
 }
 
 // ---- "¿Quieres agregar algo más?" ----
-// Una fila de productos baratos y disponibles, para que sea fácil
-// completar el pedido sin volver al Menú. Solo aparece con el carrito con
-// productos, y nunca repite algo que ya está en el carrito.
 const SUGERENCIAS_PRECIO_MAX = 20000;
 const SUGERENCIAS_CANTIDAD = 5;
 
-// Se baraja una sola vez por visita a carrito.html (no cada vez que se
-// agrega/quita un producto) para que la selección no cambie de golpe
-// mientras el cliente sigue armando su pedido.
 let productosSugeridosBase = null;
 
 function barajarProductos(arreglo) {
@@ -341,17 +248,12 @@ function crearTarjetaSugerencia(producto) {
   });
 
   wrap.querySelector('.rail-quick-add').addEventListener('click', function () {
-    // Igual que en el Menú: si el producto tiene sabores, el "+" rápido
-    // abre la ficha en vez de agregar directo.
     if (producto.sabores && producto.sabores.length) {
       if (typeof abrirFichaProducto === 'function') abrirFichaProducto(producto.id);
       return;
     }
     agregarAlCarrito(producto);
     if (typeof mostrarToast === 'function') mostrarToast(producto.nombre + ' agregado al carrito');
-    // Se vuelve a pintar todo el carrito (no solo las sugerencias): el
-    // producto recién agregado debe desaparecer de aquí y aparecer en la
-    // lista de arriba, con el total actualizado.
     renderizarCarrito();
   });
 
@@ -389,12 +291,7 @@ function renderizarSugerencias() {
   });
 }
 
-// ---- Modal de confirmación para "Vaciar carrito" ----
-// Un modal casero con <div> + CSS en vez de confirm() del navegador, que el
-// enunciado de la tarea pide evitar porque bloquea la página y se ve feo.
-// Se puede cerrar con Escape, clic en el fondo o el botón "Cancelar", y
-// atrapa el foco de teclado mientras está abierto — igual que el modal de
-// la ruleta en ruleta.js.
+// ---- Modal de "Vaciar carrito" ----
 let elementoConFocoAntesDelModalVaciar = null;
 
 function abrirModalVaciar() {
@@ -416,8 +313,6 @@ function cerrarModalVaciar() {
   modal.hidden = true;
   document.body.style.overflow = '';
 
-  // Devuelve el foco a donde estaba antes de abrir el modal (el botón
-  // "Vaciar carrito"), en vez de dejarlo perdido en el body.
   if (elementoConFocoAntesDelModalVaciar) elementoConFocoAntesDelModalVaciar.focus();
 }
 
@@ -432,15 +327,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (btnContinuar) {
     btnContinuar.addEventListener('click', async function () {
-      // El botón ya está deshabilitado si el carrito está vacío, pero se
-      // valida de nuevo por si acaso (por ejemplo, si alguien lo habilita
-      // manualmente desde las herramientas de desarrollador).
       if (obtenerCarrito().length === 0) return;
 
-      // deviceEsElegibleParaRuleta (definida en ruleta.js) consulta
-      // Supabase para saber si este dispositivo ya jugó — mientras se
-      // espera esa respuesta, se deshabilita el botón para que no se
-      // pueda hacer doble clic y mandar dos consultas a la vez.
       const textoOriginal = btnContinuar.textContent;
       btnContinuar.disabled = true;
       btnContinuar.textContent = 'Verificando...';
@@ -454,11 +342,6 @@ document.addEventListener('DOMContentLoaded', function () {
           window.location.href = 'entrega.html';
         }
       } catch (error) {
-        // Si deviceEsElegibleParaRuleta falla (por ejemplo, js/ruleta.js no
-        // llegó a cargar por algún bloqueo de red) el cliente no debe
-        // quedarse atascado sin poder continuar su pedido — se salta la
-        // ruleta y se va directo al formulario de entrega, igual que si no
-        // fuera elegible.
         console.error('No se pudo verificar la elegibilidad para la ruleta, se continúa sin ella:', error);
         window.location.href = 'entrega.html';
       } finally {
@@ -476,15 +359,12 @@ document.addEventListener('DOMContentLoaded', function () {
       cerrarModalVaciar();
     });
   }
-  // Cerrar el modal tocando el fondo oscuro, igual que un modal normal.
   if (modal) {
     modal.addEventListener('click', function (e) {
       if (e.target === modal) cerrarModalVaciar();
     });
   }
 
-  // Escape para cerrar, y Tab/Shift+Tab atrapado dentro del modal mientras
-  // está abierto (no debe poder salir hacia el resto de la página).
   document.addEventListener('keydown', function (e) {
     const caja = document.getElementById('modal-vaciar-caja');
     if (!modal || modal.hidden || !caja) return;

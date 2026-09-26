@@ -23,11 +23,6 @@
     </header>
 
     <main>
-      <!-- "Continuar pedido" llama a deviceEsElegibleParaRuleta (Tarea 4,
-           ver js/carrito.js): si el subtotal es >= $70.000 y el
-           dispositivo no ha jugado, se abre el modal de la ruleta de aquí
-           abajo antes de entrega.html; si no, va directo a entrega.html
-           como ya funcionaba desde la Tarea 3. -->
       <section class="screen" id="tab-carrito">
         <div class="sec-head">
           <div>
@@ -37,9 +32,6 @@
           <img class="sec-head-logo" src="imagenes/logo-optimized.png" alt="Patrick's JK" />
         </div>
 
-        <!-- Uno de estos dos bloques se muestra y el otro se oculta
-             (con el atributo "hidden") según si hay o no productos —
-             lo decide renderizarCarrito() en js/carrito.js. -->
         <div class="cart-empty" id="carrito-vacio">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6" />
@@ -66,10 +58,6 @@
           </button>
         </div>
 
-        <!-- "¿Quieres agregar algo más?": productos baratos y disponibles
-             que todavía no están en el carrito (ver renderizarSugerencias
-             en js/carrito.js). Solo se muestra con el carrito con
-             productos y si queda al menos una sugerencia por mostrar. -->
         <div id="sugerencias-bloque" hidden>
           <div class="block-title">
             <h2>¿Quieres agregar algo más?</h2>
@@ -81,9 +69,7 @@
       </section>
     </main>
 
-    <!-- Modal casero de confirmación para vaciar el carrito (no usa
-         confirm() del navegador, que se ve feo y bloquea la página). Está
-         oculto por defecto con "hidden" y js/carrito.js lo muestra/oculta. -->
+    <!-- modal de confirmar vaciar carrito -->
     <div class="modal-backdrop" id="modal-vaciar" hidden>
       <div class="modal-box" id="modal-vaciar-caja" role="dialog" aria-modal="true" aria-labelledby="modal-vaciar-titulo">
         <h3 id="modal-vaciar-titulo" class="modal-titulo">Vaciar carrito</h3>
@@ -95,13 +81,7 @@
       </div>
     </div>
 
-    <!-- Modal de la ruleta de descuentos (Tarea 4). Se abre desde el botón
-         "Continuar pedido" cuando el carrito es elegible (ver js/carrito.js
-         y js/ruleta.js). Se arma como un modal (backdrop + tarjeta) en vez
-         de una pantalla completa, a propósito, para poder cerrarlo con un
-         clic en el fondo oscuro (uno de los tres métodos de cierre que
-         pide la Tarea 4), cosa que una pantalla completa sin "afuera" no
-         permitiría. -->
+    <!-- acá hice la ruleta -->
     <div class="modal-backdrop" id="ruleta-overlay" hidden>
       <div class="ruleta-sheet" id="ruleta-sheet" role="dialog" aria-modal="true" aria-labelledby="ruletaTitle">
         <div class="ruleta-top">
@@ -112,10 +92,6 @@
         <div class="ruleta-body">
           <div class="ruleta-wheel-wrap">
             <div class="ruleta-pointer" aria-hidden="true"></div>
-            <!-- Los 12 rótulos de premio y el conic-gradient de colores se
-                 arman en JS (pintarRueda, en js/ruleta.js) porque cambian
-                 cada vez que se abre el modal: se sortea 50/50 cuál de las
-                 dos ruletas (A o B) le toca al cliente. -->
             <div class="ruleta-wheel" id="ruleta-wheel"></div>
             <div class="ruleta-hub" aria-hidden="true"></div>
           </div>
@@ -128,8 +104,7 @@
       </div>
     </div>
 
-    <!-- Ficha de producto: se abre al tocar una sugerencia (ver
-         js/ficha.js). Mismo bloque que en tienda1.html/menu.html. -->
+    <!-- ficha de producto, ver js/ficha.js -->
     <div class="ficha-overlay" id="ficha-overlay" hidden>
       <div class="ficha-sheet" id="ficha-sheet" role="dialog" aria-modal="true" aria-labelledby="ficha-nombre">
         <div class="ficha-scroll">
@@ -161,9 +136,6 @@
             <span>Total</span>
             <b id="ficha-precio">$0</b>
           </div>
-          <!-- Elige la cantidad ANTES de agregar (empieza en 1) — recién al
-               tocar "Agregar al carrito" se suma todo de una vez (ver
-               js/ficha.js). -->
           <div class="ficha-qty-controls" id="ficha-qty-controls">
             <button type="button" class="qty-btn" id="ficha-qty-menos" aria-label="Restar una unidad">−</button>
             <span class="qty-value" id="ficha-qty-valor">1</span>
@@ -214,9 +186,6 @@
   <script src="js/carrito.js"></script>
   <script src="js/navegacion.js"></script>
   <script src="js/ficha.js"></script>
-  <!-- type="module" para poder usar import dentro de ruleta.js (así se
-       trae el cliente de Supabase desde un CDN sin agregar un build step
-       al proyecto) — ver el comentario al inicio de ese archivo. -->
   <script type="module" src="js/ruleta.js"></script>
 </body>
 </html>

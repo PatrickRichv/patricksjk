@@ -1,24 +1,9 @@
-// Pantalla pública de Ofertas: lee de la tabla `ofertas` en Supabase (solo
-// lectura, con la misma "anon key" pública que ya usa el resto del
-// proyecto — ver config-supabase.js) y pinta las que estén activas.
-//
-// También se carga en tienda1.html (Inicio) por cargarOfertaDestacada: la
-// UNA oferta que el admin eligió para mostrar ahí (ver el panel de admin), con
-// respaldo automático a la más antigua si no ha elegido ninguna.
-//
-// Es un módulo de JavaScript (type="module") por la misma razón que
-// ruleta.js: así se puede usar `import` para traer el cliente de Supabase
-// desde un CDN sin agregar un build step al proyecto.
+// Pantalla pública de Ofertas + la oferta destacada de Inicio.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config-supabase.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// La fila de la ruleta (ver js/ruleta.js) también puede marcarse como
-// "oferta destacada" desde el panel de admin — mientras la ruleta esté
-// ACTIVA, cargarOfertaDestacada la oculta de todos modos (ya tiene su
-// propio banner en Inicio, ver más abajo); solo se ve como tarjeta cuando
-// está desactivada pero sigue siendo la elegida.
 const CODIGO_RULETA = 'ruleta';
 
 function crearTarjetaOferta(oferta) {
@@ -43,34 +28,21 @@ function crearTarjetaOferta(oferta) {
   return tarjeta;
 }
 
-async function cargarOfertas() {
+function pintarListaOfertas(activas) {
   const lista = document.getElementById('ofertas-lista');
   const vacio = document.getElementById('ofertas-vacio');
   const cargando = document.getElementById('ofertas-cargando');
   if (!lista || !vacio || !cargando) return;
 
-  // Sin .order() a propósito — mismo motivo que en el admin (admin.js /
-  // cargarPedidos): pedir que ordene por una columna cuyo nombre exacto no
-  // conocemos con certeza (creado_en, created_at...) hace fallar TODA la
-  // consulta si no existe. Se trae todo sin ordenar y se ordena aquí mismo.
-  const { data, error } = await supabase.from('ofertas').select('*').eq('activa', true);
-
   cargando.hidden = true;
 
-  if (error) {
-    console.error('No se pudieron cargar las ofertas:', error);
-    vacio.hidden = false;
-    vacio.textContent = 'No se pudieron cargar las ofertas en este momento. Intenta de nuevo más tarde.';
-    return;
-  }
-
-  if (!data || data.length === 0) {
+  if (activas.length === 0) {
     vacio.hidden = false;
     return;
   }
 
   vacio.hidden = true;
-  const ordenadas = data.slice().sort(function (a, b) {
+  const ordenadas = activas.slice().sort(function (a, b) {
     const fechaA = a.creado_en || a.created_at || '';
     const fechaB = b.creado_en || b.created_at || '';
     return fechaB < fechaA ? -1 : fechaB > fechaA ? 1 : 0;
@@ -80,98 +52,78 @@ async function cargarOfertas() {
   });
 }
 
-/**
- * Pinta en Inicio la UNA oferta que debe destacarse: primero busca la que
- * el admin marcó como `destacada` (desde el panel de admin); si no hay ninguna (o la
- * consulta falla), usa como respaldo la oferta activa más antigua — así
- * Inicio siempre muestra algo mientras exista al menos una oferta activa,
- * sin que el admin tenga que elegir una a la fuerza.
- *
- * En Inicio solo debe verse UN aviso de promoción a la vez: si la ruleta
- * está activa, ya tiene su propio banner (ver actualizarBannerRuleta en
- * inicio.js) y esta tarjeta se queda oculta aunque exista una oferta
- * destacada — mostrar los dos juntos es justo el bug que se reportó.
- *
- * Sin importar cómo termine, avisa con marcarPromoCheckListo (definida en
- * js/navegacion.js) — es la otra de las dos consultas que #promo-skeleton
- * espera antes de dejar de reservar espacio en la pantalla.
- */
-async function cargarOfertaDestacada() {
+// pinta en Inicio la oferta destacada que eligió el admin (si la ruleta está
+// activa, gana su propio banner y esta tarjeta se queda oculta)
+async function pintarOfertaDestacada(activas, ruletaActiva) {
   const contenedor = document.getElementById('oferta-destacada');
-  if (!contenedor) {
-    if (typeof marcarPromoCheckListo === 'function') marcarPromoCheckListo();
-    return; // esta página no tiene el bloque de oferta destacada
+  if (!contenedor) return;
+
+  if (ruletaActiva) {
+    contenedor.hidden = true;
+    return;
   }
 
+  const candidatas = activas.filter(function (o) {
+    return o.codigo !== CODIGO_RULETA;
+  });
+
+  let oferta = candidatas.find(function (o) {
+    return o.destacada === true;
+  }) || null;
+
+  if (!oferta && candidatas.length > 0) {
+    const ordenadas = candidatas.slice().sort(function (a, b) {
+      const fechaA = a.creado_en || a.created_at || '';
+      const fechaB = b.creado_en || b.created_at || '';
+      return fechaA < fechaB ? -1 : fechaA > fechaB ? 1 : 0;
+    });
+    oferta = ordenadas[0];
+  }
+
+  if (!oferta) {
+    contenedor.hidden = true;
+    return;
+  }
+
+  contenedor.querySelector('.oferta-destacada-titulo').textContent = oferta.titulo;
+  const descripcionEl = contenedor.querySelector('.oferta-destacada-desc');
+  if (oferta.descripcion) {
+    descripcionEl.hidden = false;
+    descripcionEl.textContent = oferta.descripcion;
+  } else {
+    descripcionEl.hidden = true;
+  }
+  contenedor.hidden = false;
+}
+
+// una sola consulta a Supabase alimenta tanto la lista de Ofertas como la
+// tarjeta destacada de Inicio, en vez de que cada una pida lo mismo por su lado
+async function cargarOfertas() {
+  const contenedorDestacada = document.getElementById('oferta-destacada');
+  const vacio = document.getElementById('ofertas-vacio');
+  const cargando = document.getElementById('ofertas-cargando');
+
   try {
-    if (typeof ruletaEstaActiva === 'function') {
-      try {
-        const ruletaActiva = await ruletaEstaActiva();
-        if (ruletaActiva) {
-          contenedor.hidden = true;
-          return;
-        }
-      } catch (error) {
-        console.error('No se pudo verificar si la ruleta está activa antes de mostrar la oferta destacada:', error);
+    const { data, error } = await supabase.from('ofertas').select('*').eq('activa', true);
+
+    if (error) {
+      console.error('No se pudieron cargar las ofertas:', error);
+      if (cargando) cargando.hidden = true;
+      if (vacio) {
+        vacio.hidden = false;
+        vacio.textContent = 'No se pudieron cargar las ofertas en este momento. Intenta de nuevo más tarde.';
       }
-    }
-
-    let oferta = null;
-
-    const { data: destacadas, error: errorDestacada } = await supabase
-      .from('ofertas')
-      .select('*')
-      .eq('activa', true)
-      .eq('destacada', true)
-      .limit(5);
-
-    if (errorDestacada) {
-      console.error('No se pudo cargar la oferta destacada:', errorDestacada);
-    } else if (destacadas && destacadas.length > 0) {
-      oferta = destacadas[0];
-    }
-
-    if (!oferta) {
-      // Sin .order() a propósito — ver el comentario en cargarOfertas más
-      // arriba. Se trae todo lo activo y se elige la más antigua aquí mismo.
-      const { data: primeras, error: errorPrimera } = await supabase
-        .from('ofertas')
-        .select('*')
-        .eq('activa', true)
-        .limit(20);
-
-      if (errorPrimera) {
-        console.error('No se pudo cargar ninguna oferta de respaldo:', errorPrimera);
-      } else {
-        // Sin elección explícita del admin, el respaldo automático sigue sin
-        // considerar la ruleta — no tiene sentido destacarla sola sin que el
-        // admin lo haya decidido a propósito.
-        const candidatas = (primeras || []).filter(function (o) {
-          return o.codigo !== CODIGO_RULETA;
-        });
-        const ordenadas = candidatas.slice().sort(function (a, b) {
-          const fechaA = a.creado_en || a.created_at || '';
-          const fechaB = b.creado_en || b.created_at || '';
-          return fechaA < fechaB ? -1 : fechaA > fechaB ? 1 : 0;
-        });
-        oferta = ordenadas.length > 0 ? ordenadas[0] : null;
-      }
-    }
-
-    if (!oferta) {
-      contenedor.hidden = true;
+      if (contenedorDestacada) contenedorDestacada.hidden = true;
       return;
     }
 
-    contenedor.querySelector('.oferta-destacada-titulo').textContent = oferta.titulo;
-    const descripcionEl = contenedor.querySelector('.oferta-destacada-desc');
-    if (oferta.descripcion) {
-      descripcionEl.hidden = false;
-      descripcionEl.textContent = oferta.descripcion;
-    } else {
-      descripcionEl.hidden = true;
-    }
-    contenedor.hidden = false;
+    const activas = data || [];
+    const ruletaActiva = activas.some(function (o) {
+      return o.codigo === CODIGO_RULETA;
+    });
+
+    pintarListaOfertas(activas);
+    pintarOfertaDestacada(activas, ruletaActiva);
   } finally {
     if (typeof marcarPromoCheckListo === 'function') marcarPromoCheckListo();
   }
@@ -179,5 +131,4 @@ async function cargarOfertaDestacada() {
 
 document.addEventListener('DOMContentLoaded', function () {
   cargarOfertas();
-  cargarOfertaDestacada();
 });

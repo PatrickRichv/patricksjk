@@ -1,27 +1,18 @@
-// Lógica específica de la pantalla de Entrega: valida el formulario y, si
-// todo está bien, arma el pedido y abre WhatsApp.
+// Formulario de entrega: valida, abre WhatsApp con el pedido y guarda en Supabase.
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Si alguien llega aquí sin productos en el carrito (por ejemplo
-  // escribiendo la URL directo), no tiene sentido mostrar el formulario —
-  // se manda de vuelta al Menú.
   if (obtenerCarrito().length === 0) {
     window.location.href = 'menu.html';
     return;
   }
 
   const form = document.getElementById('form-entrega');
-  // A propósito NO es `async function` (ver el comentario de más abajo,
-  // justo antes de abrirWhatsAppConPedido): Safari/WebKit (todo navegador
-  // en iPhone, incluido Chrome-para-iOS) puede bloquear window.open() en
-  // silencio, sin ningún error en consola, si la llamada ocurre dentro de
-  // una función async — incluso antes del primer await. Por eso este
-  // handler hace la parte que abre WhatsApp de forma 100% síncrona, y deja
-  // lo que sí necesita esperar (Supabase) en manejarGuardadoYRedireccion,
-  // una función async aparte.
   form.addEventListener('submit', manejarEnvioFormulario);
 });
 
+// no es async: Safari puede bloquear el window.open() de WhatsApp en
+// silencio si se llama dentro de una función async, así que esta parte
+// queda 100% síncrona y lo que sí espera (Supabase) va aparte.
 function manejarEnvioFormulario(e) {
   e.preventDefault();
 
@@ -33,8 +24,6 @@ function manejarEnvioFormulario(e) {
   const celular = campoCelular.value.trim();
   const direccion = campoDireccion.value.trim();
 
-  // Se validan los tres campos siempre (no se corta en el primer error),
-  // para que el cliente vea de una vez todo lo que le falta corregir.
   const errorNombre = validarNombre(nombre);
   const errorCelular = validarCelular(celular);
   const errorDireccion = validarDireccion(direccion);
@@ -45,9 +34,6 @@ function manejarEnvioFormulario(e) {
 
   if (errorNombre || errorCelular || errorDireccion) return;
 
-  // escaparHtml (definida en pedido.js) limpia el nombre y la dirección
-  // antes de que se usen en cualquier parte — ver el comentario de esa
-  // función para el porqué.
   const datosEntrega = {
     nombre: escaparHtml(nombre),
     celular: celular,
@@ -58,38 +44,12 @@ function manejarEnvioFormulario(e) {
   const subtotal = calcularSubtotal();
   const codigoPremio = obtenerCodigoPremioCarrito();
 
-  // IMPORTANTE: abrir WhatsApp es lo PRIMERO que se hace, todavía en el
-  // mismo instante del clic — los navegadores bloquean window.open() (sin
-  // avisar con ningún error) si no ocurre de inmediato en respuesta a la
-  // interacción del cliente. Si esto fuera después de un `await` (como
-  // guardar en Supabase), el navegador ya no lo cuenta como "resultado
-  // directo del clic" y la ventana simplemente no se abre.
   abrirWhatsAppConPedido(datosEntrega, items, subtotal);
-
-  // El carrito se vacía DE UNA VEZ, todavía sin esperar nada de red — en el
-  // celular, abrir WhatsApp manda el navegador a segundo plano, y ahí el
-  // sistema operativo puede pausar o cortar esta pestaña mientras espera la
-  // respuesta de Supabase (el await de abajo). Si vaciarCarrito() quedara
-  // después de ese await, esa espera colgada hacía que nunca se llegara a
-  // vaciar: el cliente volvía a la tienda y el carrito seguía con los
-  // productos del pedido que ya se había mandado, y el próximo producto que
-  // agregaba se sumaba encima de esos.
   vaciarCarrito();
 
   manejarGuardadoYRedireccion(datosEntrega, items, subtotal, codigoPremio);
 }
 
-/**
- * El guardado en Supabase (tabla `pedidos`) pasa DESPUÉS de abrir WhatsApp,
- * sin bloquear nada — si falla, el pedido por WhatsApp ya se envió de
- * todos modos, que es lo prioritario. guardarPedidoSupabase (definida en
- * ruleta.js, expuesta en window) ya maneja sus propios errores con
- * console.error; este try/catch es una red de seguridad extra por si el
- * módulo no llegó a cargar a tiempo. Se guarda si funcionó o no para
- * avisar en Inicio — antes esto fallaba en silencio (solo en la consola) y
- * nadie se enteraba de que el pedido no había quedado guardado para el
- * admin.
- */
 async function manejarGuardadoYRedireccion(datosEntrega, items, subtotal, codigoPremio) {
   let guardadoOk = true;
   if (typeof guardarPedidoSupabase === 'function') {
@@ -108,23 +68,14 @@ async function manejarGuardadoYRedireccion(datosEntrega, items, subtotal, codigo
     }
   }
 
-  // Si el guardado en Supabase falló, se avisa en Inicio (ver
-  // avisarSiVieneDeUnPedido en inicio.js) — el pedido por WhatsApp sí
-  // llegó, pero no va a aparecer en el panel de admin.
   window.location.href = 'tienda1.html?pedido=enviado' + (guardadoOk ? '' : '&guardado=no');
 }
 
-/** '' si el nombre es válido, o el mensaje de error a mostrar. */
 function validarNombre(valor) {
   if (!valor) return 'Escribe tu nombre completo.';
   return '';
 }
 
-/**
- * El celular solo puede tener números y espacios, y debe tener al menos
- * 10 dígitos (sin contar los espacios) — así se evita un celular con
- * letras o demasiado corto para ser un número real.
- */
 function validarCelular(valor) {
   if (!valor) return 'Escribe tu celular.';
   if (!/^[0-9 ]+$/.test(valor)) return 'El celular solo puede tener números y espacios.';
@@ -133,17 +84,11 @@ function validarCelular(valor) {
   return '';
 }
 
-/** '' si la dirección es válida, o el mensaje de error a mostrar. */
 function validarDireccion(valor) {
   if (!valor) return 'Escribe la dirección de entrega.';
   return '';
 }
 
-/**
- * Pinta (o limpia) el mensaje de error debajo de un campo, y marca el
- * input como inválido para lectores de pantalla mientras el error esté
- * visible.
- */
 function mostrarErrorCampo(idCampo, mensajeError) {
   const input = document.getElementById(idCampo);
   const errorEl = document.getElementById(idCampo + '-error');

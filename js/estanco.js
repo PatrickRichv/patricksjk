@@ -1,8 +1,4 @@
-// Pinta la carta del punto físico (carta1.html) a partir de
-// productosEstanco (ver js/productos-estanco.js). Mismo patrón de subtabs
-// que categoriaActiva en menu.js: se muestra SOLO la categoría elegida a la
-// vez, no todo el catálogo de un tirón — con muchos productos, una sola
-// página larga era difícil de leer desde el celular en el punto físico.
+// Carta del punto físico (carta1.html), a partir de productosEstanco.
 
 var categoriaActivaEstanco = categoriasEstanco[0];
 

@@ -1,9 +1,3 @@
-/* ============================================================
-   Patrick's JK — versión HTML/CSS/JS puro
-   Mismos tokens y componentes visuales que el proyecto React
-   (ver src/styles/tokens.css y src/App.css en patricksjk-react).
-   ============================================================ */
-
 :root {
   --navy: #100c09;
   --navy-2: #191310;
@@ -21,9 +15,6 @@
   color-scheme: dark;
 }
 
-/* Solo estanco.html usa saltos con "#ancla" (su barra de categorías) — el
-   resto del sitio nunca navega así, así que esto no le cambia nada a las
-   demás pantallas. */
 html {
   scroll-behavior: smooth;
 }
@@ -167,8 +158,7 @@ main {
   position: relative;
   display: inline-flex;
 }
-/* Insignia con la cantidad total de unidades en el carrito — ver
-   actualizarBadgeCarrito en js/navegacion.js. */
+/* insignia con la cantidad del carrito */
 .tab-badge {
   position: absolute;
   top: -5px;
@@ -189,8 +179,7 @@ main {
 .tab-badge[hidden] {
   display: none;
 }
-/* Rebote corto cuando se agrega un producto — se re-dispara quitando y
-   volviendo a poner la clase (ver actualizarBadgeCarrito). */
+/* rebote al agregar un producto */
 .tab-badge.tab-badge-animar {
   animation: tab-badge-pop 0.4s ease;
 }
@@ -240,7 +229,7 @@ main {
   flex: none;
   height: 54px;
   width: auto;
-  aspect-ratio: 1; /* el archivo es cuadrado (256x256) */
+  aspect-ratio: 1;
   object-fit: contain;
 }
 .sec-head .eyebrow {
@@ -264,9 +253,6 @@ main {
 .hero-image {
   width: 100%;
   height: auto;
-  /* Relación real del archivo (1600x872) — reserva el espacio antes de que
-     la imagen termine de cargar, para que el resto de Inicio no "salte"
-     hacia abajo cuando llegue. */
   aspect-ratio: 1600 / 872;
   display: block;
 }
@@ -306,9 +292,7 @@ main {
   }
 }
 
-/* Estilo "banner brillante" compartido — nació para la ruleta y ahora
-   también lo usa la oferta destacada de Inicio (#oferta-destacada), para
-   que ambos avisos llamen la atención de la misma forma. */
+/* banner brillante, lo usan la ruleta y la oferta destacada */
 .roulette-banner,
 #oferta-destacada {
   position: relative;
@@ -332,7 +316,7 @@ main {
 #oferta-destacada[hidden] {
   display: none;
 }
-/* Franja de brillo que recorre el banner en diagonal, de vez en cuando. */
+/* franja de brillo del banner */
 .roulette-banner::after,
 #oferta-destacada::after {
   content: '';
@@ -455,7 +439,6 @@ main {
 .physical-only-item img {
   width: 100%;
   height: auto;
-  /* Relación real de ambos archivos (1600x533). */
   aspect-ratio: 1600 / 533;
   display: block;
 }
@@ -616,9 +599,7 @@ main {
   padding: 14px;
   margin-bottom: 10px;
 }
-/* Recordatorio de siempre: sin esto, "hidden" no oculta nada porque
-   .oferta-card ya fija su propio "display" (ver el mismo caso arriba en
-   .modal-backdrop y .roulette-banner). */
+/* sin esto "hidden" no oculta nada, .oferta-card ya trae su propio display */
 .oferta-card[hidden] {
   display: none;
 }
@@ -629,9 +610,7 @@ main {
   color: var(--amber);
   margin-top: 2px;
 }
-/* La oferta destacada de Inicio usa el mismo tamaño de ícono que el banner
-   de la ruleta (ver .roulette-banner-icon), sin el margin-top que necesita
-   la tarjeta plana de la lista de Ofertas. */
+/* mismo tamaño de ícono que el banner de la ruleta */
 #oferta-destacada .oferta-ico {
   width: 28px;
   height: 28px;
@@ -686,8 +665,7 @@ main {
   font-size: 11.5px;
   color: var(--cream-dim);
 }
-/* Insignia de estado, para que "activa/inactiva" se entienda de un vistazo
-   sin tener que fijarse en cuál de dos botones está deshabilitado. */
+/* insignia de activa/inactiva */
 .oferta-badge {
   flex: none;
   font-size: 10px;
@@ -745,9 +723,7 @@ main {
   border-color: var(--amber);
   color: var(--amber);
 }
-/* Un solo botón que cambia de texto y color según la acción que va a hacer
-   (en vez de dos botones activar/desactivar, uno siempre deshabilitado —
-   confuso porque no queda claro cuál manda). */
+/* un solo botón que cambia según la acción a hacer */
 .admin-toggle-btn.es-activar {
   border-color: var(--teal);
   color: var(--teal);
@@ -867,8 +843,7 @@ main {
   align-items: center;
   gap: 8px;
 }
-/* Mismo alto que .admin-borrar-btn (30px, ver más arriba) para que el
-   botón de borrar quede parejo con estos dos en la misma fila. */
+/* mismo alto que .admin-borrar-btn */
 .pedido-acciones .pedido-confirmar-btn,
 .pedido-acciones .pedido-pendiente-btn {
   flex: 1;
@@ -1343,17 +1318,13 @@ main {
 }
 
 /* ================= FICHA DE PRODUCTO ================= */
-/* z-index más alto que los otros modales (70): la ficha puede abrirse
-   desde Inicio o Menú y debe quedar siempre por encima de cualquier otra
-   cosa en pantalla. */
 .ficha-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
   background: color-mix(in srgb, var(--navy) 75%, transparent);
 }
-/* Mismo recordatorio que en .modal-backdrop: sin esta regla, "hidden" no
-   hace nada porque .ficha-overlay ya fija su propio valor de display. */
+/* sin esto "hidden" no oculta nada, .ficha-overlay ya trae su propio display */
 .ficha-overlay[hidden] {
   display: none;
 }
@@ -1522,10 +1493,7 @@ main {
   color: var(--cream);
   font-variant-numeric: tabular-nums;
 }
-/* Elige CUÁNTAS unidades agregar (siempre visible, empieza en 1) — el
-   cliente primero arma la cantidad aquí y recién con .ficha-add-btn se
-   agrega todo de una vez (ver js/ficha.js). Vive en la misma fila que el
-   total, a la derecha. */
+/* control de cantidad antes de agregar */
 .ficha-qty-controls {
   flex: none;
   display: flex;
@@ -1625,7 +1593,7 @@ main {
   border-color: var(--amber);
 }
 
-/* ================= RULETA (modal, Tarea 4) ================= */
+/* ================= RULETA ================= */
 .ruleta-sheet {
   width: 100%;
   max-width: 400px;
@@ -1887,10 +1855,7 @@ main {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ================= CARTA DEL ESTANCO (estanco.html) ================= */
-/* Esta página no tiene barra de navegación inferior (no hay a dónde
-   navegar) — el "main" de estilos.css reserva 96px abajo por defecto
-   pensando en esa barra; aquí solo hace falta el respiro normal. */
+/* ================= CARTA DEL ESTANCO ================= */
 .estanco-page main {
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }

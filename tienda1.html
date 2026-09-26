@@ -28,18 +28,8 @@
           <img class="hero-image" src="imagenes/hero-inicio.jpeg" alt="Patrick's JK" />
         </div>
 
-        <!-- Reserva el espacio del banner de ruleta/oferta mientras las dos
-             consultas a Supabase (ruletaEstaActiva y cargarOfertaDestacada)
-             siguen en curso — sin esto, el aviso aparecía de último y
-             empujaba el resto de la página hacia abajo de un salto. Se
-             oculta apenas ambas consultas terminan (ver
-             marcarPromoCheckListo en js/navegacion.js). -->
         <div class="promo-skeleton" id="promo-skeleton" aria-hidden="true"></div>
 
-        <!-- Oculto por defecto: js/inicio.js lo muestra solo si el admin
-             tiene la "oferta" de la ruleta activa (ver ruletaEstaActiva en
-             js/ruleta.js) — así nunca hay un parpadeo de "aparece y luego
-             desaparece" mientras se confirma con Supabase. -->
         <div class="roulette-banner" id="roulette-banner" hidden>
           <svg class="roulette-banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
             <rect x="4" y="8.3" width="16" height="4" rx="0.6" />
@@ -54,10 +44,6 @@
           </div>
         </div>
 
-        <!-- Oculta por defecto: js/ofertas.js (cargarOfertaDestacada) la
-             muestra solo si hay al menos una oferta activa — primero la
-             que el admin marcó como destacada, si no eligió ninguna usa la
-             oferta activa más antigua como respaldo. -->
         <div class="oferta-card" id="oferta-destacada" hidden>
           <svg class="ico oferta-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="3" y="8" width="18" height="4" rx="1" />
@@ -78,9 +64,7 @@
         <div class="block-title">
           <h2>Más pedidos</h2>
         </div>
-        <!-- data-no-swipe: el carrusel ya tiene su propio scroll horizontal
-             táctil — sin esto, deslizar para ver más productos también
-             dispararía el cambio de pantalla (ver js/navegacion.js). -->
+        <!-- data-no-swipe: que no se active el swipe de pantalla en el carrusel -->
         <div class="carousel">
           <div class="carousel-track" id="carousel-track" data-no-swipe></div>
         </div>
@@ -122,13 +106,13 @@
             <span>WhatsApp · 312 719 1715</span>
           </a>
 
-          <a class="store-row store-link" href="https://www.instagram.com/camilob1226/" target="_blank" rel="noopener noreferrer">
+          <a class="store-row store-link" href="https://www.instagram.com/barylicores_patricks_jk/" target="_blank" rel="noopener noreferrer">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
               <circle cx="12" cy="12" r="4" />
               <circle cx="17" cy="7" r="0.9" fill="currentColor" stroke="none" />
             </svg>
-            <span>@camilob1226</span>
+            <span>@barylicores_patricks_jk</span>
           </a>
 
           <div class="store-row store-schedule">
@@ -146,9 +130,7 @@
       </section>
     </main>
 
-    <!-- Ficha de producto: se abre al tocar una tarjeta del carrusel (ver
-         js/ficha.js). Mismo bloque que en menu.html — ver el comentario de
-         allá sobre por qué está repetido en cada .html. -->
+    <!-- ficha de producto, ver js/ficha.js -->
     <div class="ficha-overlay" id="ficha-overlay" hidden>
       <div class="ficha-sheet" id="ficha-sheet" role="dialog" aria-modal="true" aria-labelledby="ficha-nombre">
         <div class="ficha-scroll">
@@ -180,9 +162,6 @@
             <span>Total</span>
             <b id="ficha-precio">$0</b>
           </div>
-          <!-- Elige la cantidad ANTES de agregar (empieza en 1) — recién al
-               tocar "Agregar al carrito" se suma todo de una vez (ver
-               js/ficha.js). -->
           <div class="ficha-qty-controls" id="ficha-qty-controls">
             <button type="button" class="qty-btn" id="ficha-qty-menos" aria-label="Restar una unidad">−</button>
             <span class="qty-value" id="ficha-qty-valor">1</span>
@@ -233,9 +212,6 @@
   <script src="js/carrito.js"></script>
   <script src="js/navegacion.js"></script>
   <script src="js/ficha.js"></script>
-  <!-- Solo se necesitan aquí por ruletaEstaActiva y cargarOfertaDestacada
-       (ver js/inicio.js) — ver el comentario al inicio de js/ruleta.js
-       sobre por qué son módulos. -->
   <script type="module" src="js/ruleta.js"></script>
   <script type="module" src="js/ofertas.js"></script>
   <script src="js/inicio.js"></script>

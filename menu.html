@@ -32,10 +32,7 @@
           <img class="sec-head-logo" src="imagenes/logo-optimized.png" alt="Patrick's JK" />
         </div>
 
-        <!-- data-no-swipe: el gesto de deslizar entre categorías (ver
-             js/navegacion.js) ignora cualquier arrastre que empiece aquí,
-             para no interferir mientras el cliente toca o selecciona texto
-             en el buscador. -->
+        <!-- data-no-swipe: que no se active el swipe de categorías al escribir aquí -->
         <div class="search-box" data-no-swipe>
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <circle cx="10.5" cy="10.5" r="6.5" />
@@ -59,12 +56,7 @@
       </section>
     </main>
 
-    <!-- Ficha de producto: se abre al tocar una tarjeta del Menú (ver
-         js/ficha.js). Es el mismo bloque que hay en tienda1.html — cada
-         pantalla que quiera poder abrir la ficha necesita su propia copia
-         de este HTML (este proyecto no tiene una forma de compartir un
-         trozo de HTML entre archivos sin un build step), pero el
-         comportamiento lo maneja un solo archivo de JS. -->
+    <!-- ficha de producto, ver js/ficha.js -->
     <div class="ficha-overlay" id="ficha-overlay" hidden>
       <div class="ficha-sheet" id="ficha-sheet" role="dialog" aria-modal="true" aria-labelledby="ficha-nombre">
         <div class="ficha-scroll">
@@ -96,9 +88,6 @@
             <span>Total</span>
             <b id="ficha-precio">$0</b>
           </div>
-          <!-- Elige la cantidad ANTES de agregar (empieza en 1) — recién al
-               tocar "Agregar al carrito" se suma todo de una vez (ver
-               js/ficha.js). -->
           <div class="ficha-qty-controls" id="ficha-qty-controls">
             <button type="button" class="qty-btn" id="ficha-qty-menos" aria-label="Restar una unidad">−</button>
             <span class="qty-value" id="ficha-qty-valor">1</span>

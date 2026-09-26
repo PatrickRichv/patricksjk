@@ -1,26 +1,5 @@
-// Catálogo de precios del punto físico (el estanco) — se muestra en
-// carta1.html, la carta que se escanea por QR en el local.
-//
-// A propósito es un archivo y un arreglo SEPARADOS de productos.js: aunque
-// varios productos se llaman igual, varios precios son distintos a los que
-// se manejan a domicilio (por ejemplo Gatorade, Smirnoff, Agua), y hay dos
-// bebidas que solo existen en el punto físico (Bomba Patrick's y Bomba
-// JK) — mezclar los dos catálogos en un solo arreglo habría obligado a que
-// todo producto tuviera un precio "de domicilio" y uno "del estanco", lo
-// cual complica sin necesidad los otros archivos (carrito, ficha, admin)
-// que nunca necesitan saber nada del estanco.
-//
-// Esta carta es solo para mostrar — no hay carrito ni botón de agregar acá,
-// así que no hace falta un `id` único por producto ni un `estado`
-// (disponible/agotado): es un menú de precios, no un catálogo para comprar.
-//
-// Forma de cada producto:
-// {
-//   nombre: string,
-//   precio: number,
-//   categoria: string,
-//   sabores: string[] (opcional — se muestra como lista de opciones, sin selector)
-// }
+// Catálogo de precios del punto físico (carta1.html, la que se escanea por QR).
+// Va separado de productos.js porque varios precios cambian de domicilio al estanco.
 
 const productosEstanco = [
   // Alcohol
@@ -88,9 +67,6 @@ const productosEstanco = [
   { nombre: 'Vive 100', precio: 5000, categoria: 'Bebidas', sabores: ['Original', 'Sandía'] },
 ];
 
-// Categorías derivadas del catálogo (en el orden en que aparecen), igual
-// que en productos.js — para no mantener una lista aparte que se pueda
-// desincronizar.
 const categoriasEstanco = [];
 productosEstanco.forEach(function (producto) {
   if (categoriasEstanco.indexOf(producto.categoria) === -1) {
