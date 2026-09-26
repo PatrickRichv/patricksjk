@@ -11,10 +11,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   const form = document.getElementById('form-entrega');
+  // A propósito NO es `async function` (ver el comentario de más abajo,
+  // justo antes de abrirWhatsAppConPedido): Safari/WebKit (todo navegador
+  // en iPhone, incluido Chrome-para-iOS) puede bloquear window.open() en
+  // silencio, sin ningún error en consola, si la llamada ocurre dentro de
+  // una función async — incluso antes del primer await. Por eso este
+  // handler hace la parte que abre WhatsApp de forma 100% síncrona, y deja
+  // lo que sí necesita esperar (Supabase) en manejarGuardadoYRedireccion,
+  // una función async aparte.
   form.addEventListener('submit', manejarEnvioFormulario);
 });
 
-async function manejarEnvioFormulario(e) {
+function manejarEnvioFormulario(e) {
   e.preventDefault();
 
   const campoNombre = document.getElementById('entrega-nombre');
@@ -68,14 +76,21 @@ async function manejarEnvioFormulario(e) {
   // agregaba se sumaba encima de esos.
   vaciarCarrito();
 
-  // El guardado en Supabase (tabla `pedidos`) pasa DESPUÉS, sin bloquear
-  // nada — si falla, el pedido por WhatsApp ya se envió de todos modos,
-  // que es lo prioritario. guardarPedidoSupabase (definida en ruleta.js,
-  // expuesta en window) ya maneja sus propios errores con console.error;
-  // este try/catch es una red de seguridad extra por si el módulo no
-  // llegó a cargar a tiempo. Se guarda si funcionó o no para avisar en
-  // Inicio — antes esto fallaba en silencio (solo en la consola) y nadie
-  // se enteraba de que el pedido no había quedado guardado para el admin.
+  manejarGuardadoYRedireccion(datosEntrega, items, subtotal, codigoPremio);
+}
+
+/**
+ * El guardado en Supabase (tabla `pedidos`) pasa DESPUÉS de abrir WhatsApp,
+ * sin bloquear nada — si falla, el pedido por WhatsApp ya se envió de
+ * todos modos, que es lo prioritario. guardarPedidoSupabase (definida en
+ * ruleta.js, expuesta en window) ya maneja sus propios errores con
+ * console.error; este try/catch es una red de seguridad extra por si el
+ * módulo no llegó a cargar a tiempo. Se guarda si funcionó o no para
+ * avisar en Inicio — antes esto fallaba en silencio (solo en la consola) y
+ * nadie se enteraba de que el pedido no había quedado guardado para el
+ * admin.
+ */
+async function manejarGuardadoYRedireccion(datosEntrega, items, subtotal, codigoPremio) {
   let guardadoOk = true;
   if (typeof guardarPedidoSupabase === 'function') {
     try {
