@@ -43,7 +43,7 @@ var SWIPE_THRESHOLD = 50;
 var DIRECTION_RATIO = 1.5;
 
 var TAB_ORDER = ['inicio', 'menu', 'ofertas', 'carrito'];
-var TAB_URLS = { inicio: 'tienda1.html', menu: 'menu.html', ofertas: 'ofertas.html', carrito: 'carrito.html' };
+var TAB_URLS = { inicio: 'home.html', menu: 'menu.html', ofertas: 'ofertas.html', carrito: 'carrito.html' };
 
 function irAPantallaAdyacente(paso) {
   var indiceActual = TAB_ORDER.indexOf(window.PAGINA_ACTUAL);

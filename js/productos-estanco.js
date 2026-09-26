@@ -1,4 +1,4 @@
-// Catálogo de precios del punto físico (carta1.html, la que se escanea por QR).
+// Catálogo de precios del punto físico (carta.html, la que se escanea por QR).
 // Va separado de productos.js porque varios precios cambian de domicilio al estanco.
 
 const productosEstanco = [

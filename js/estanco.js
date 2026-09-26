@@ -1,4 +1,4 @@
-// Carta del punto físico (carta1.html), a partir de productosEstanco.
+// Carta del punto físico (carta.html), a partir de productosEstanco.
 
 var categoriaActivaEstanco = categoriasEstanco[0];
 

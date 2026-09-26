@@ -68,7 +68,7 @@ async function manejarGuardadoYRedireccion(datosEntrega, items, subtotal, codigo
     }
   }
 
-  window.location.href = 'tienda1.html?pedido=enviado' + (guardadoOk ? '' : '&guardado=no');
+  window.location.href = 'home.html?pedido=enviado' + (guardadoOk ? '' : '&guardado=no');
 }
 
 function validarNombre(valor) {

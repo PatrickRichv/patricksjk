@@ -98,7 +98,7 @@ function avisarSiVieneDeUnPedido() {
   } else {
     mostrarToast('¡Pedido enviado! Revisa WhatsApp para confirmar.');
   }
-  window.history.replaceState({}, '', 'tienda1.html');
+  window.history.replaceState({}, '', 'home.html');
 }
 
 // muestra el banner de la ruleta solo si el admin la tiene activa
