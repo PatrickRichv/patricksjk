@@ -1,8 +1,8 @@
-// Panel de administrador — Ofertas, Pedidos e Información.
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config-supabase.js';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Panel de administrador — Ofertas, Pedidos, Información, Carta local y Tienda online.
+// El panel pide iniciar sesión (admin-auth.js) antes de cargar cualquier dato.
+import { supabase } from './supabase-cliente.js';
+import { requerirSesion } from './admin-auth.js';
+import { cargarCatalogo } from './admin-catalogo.js';
 
 const CODIGO_RULETA = 'ruleta';
 
@@ -25,12 +25,14 @@ function calcularFechaDesdeFiltro(filtro) {
 }
 
 // ---- Cambiar entre Ofertas, Pedidos e Información ----
-const TITULOS_SECCION = { ofertas: 'Ofertas', pedidos: 'Pedidos', info: 'Información' };
+const TITULOS_SECCION = { ofertas: 'Ofertas', pedidos: 'Pedidos', info: 'Información', carta: 'Carta local', tienda: 'Tienda online' };
 
 function cambiarSeccion(seccion) {
   document.getElementById('admin-seccion-ofertas').hidden = seccion !== 'ofertas';
   document.getElementById('admin-seccion-pedidos').hidden = seccion !== 'pedidos';
   document.getElementById('admin-seccion-info').hidden = seccion !== 'info';
+  document.getElementById('admin-seccion-carta').hidden = seccion !== 'carta';
+  document.getElementById('admin-seccion-tienda').hidden = seccion !== 'tienda';
   document.getElementById('admin-titulo-pantalla').textContent = TITULOS_SECCION[seccion] || '';
 
   document.querySelectorAll('#admin-subtabs button').forEach(function (btn) {
@@ -39,6 +41,7 @@ function cambiarSeccion(seccion) {
 
   if (seccion === 'pedidos') cargarPedidos();
   if (seccion === 'info') cargarInformacion();
+  if (seccion === 'carta' || seccion === 'tienda') cargarCatalogo(seccion);
 }
 
 // ---- Ofertas ----
@@ -505,7 +508,7 @@ function mostrarMensaje(texto, esError) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  cargarOfertas();
+  requerirSesion(cargarOfertas);
 
   document.querySelectorAll('#admin-subtabs button').forEach(function (btn) {
     btn.addEventListener('click', function () {

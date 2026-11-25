@@ -12,16 +12,44 @@
   />
   <title>Patrick's JK — Admin</title>
   <link rel="stylesheet" href="css/estilos.css" />
+  <link rel="stylesheet" href="css/admin-carta.css" />
 </head>
 <body>
-  <div class="app">
+  <!-- inicio de sesión: el panel solo se muestra a los correos de la tabla «admins» -->
+  <div class="admin-login" id="admin-login">
+    <form class="admin-login-caja" id="admin-login-form" onsubmit="return false">
+      <img src="imagenes/logo-optimized.png" alt="Patrick's JK" width="88" height="88" />
+      <h1>Panel de administración</h1>
+      <p class="admin-login-sub">Patrick's JK · Bar &amp; Licorería</p>
+      <div class="entrega-field">
+        <label for="admin-login-email">Correo</label>
+        <input id="admin-login-email" type="email" autocomplete="username" required />
+      </div>
+      <div class="entrega-field">
+        <label for="admin-login-password">Contraseña</label>
+        <input id="admin-login-password" type="password" autocomplete="current-password" required />
+      </div>
+      <p class="admin-login-error" id="admin-login-error" role="alert" hidden></p>
+      <button type="submit" class="entrega-submit-btn" id="admin-login-btn">Entrar</button>
+    </form>
+  </div>
+
+  <div class="app" id="admin-app" hidden>
     <header class="topbar topbar-apilado">
-      <span class="logo-text">Patrick's JK — Admin</span>
+      <div class="admin-sesion">
+        <span class="logo-text">Patrick's JK — Admin</span>
+        <span class="admin-sesion-derecha">
+          <span class="admin-sesion-correo" id="admin-sesion-correo"></span>
+          <button type="button" class="admin-salir-btn" id="admin-salir-btn">Salir</button>
+        </span>
+      </div>
 
       <div class="subtabs" id="admin-subtabs">
         <button type="button" class="active" data-seccion="ofertas">Ofertas</button>
         <button type="button" data-seccion="pedidos">Pedidos</button>
         <button type="button" data-seccion="info">Información</button>
+        <button type="button" data-seccion="carta">Carta local</button>
+        <button type="button" data-seccion="tienda">Tienda online</button>
       </div>
     </header>
 
@@ -115,8 +143,100 @@
             <div id="info-productos-lista"></div>
           </div>
         </div>
+
+        <!-- carta del local (carta.html): tabla productos_local -->
+        <div id="admin-seccion-carta" hidden>
+          <p class="carta-admin-ayuda">
+            Precios del <b>local</b> (la carta del QR). Lo que cambies aquí se ve al instante en la carta
+            (<a href="carta.html" target="_blank" rel="noopener">ver carta</a>).
+          </p>
+          <div class="carta-admin-barra">
+            <input id="carta-admin-buscar" type="search" placeholder="Buscar producto…" autocomplete="off" />
+            <button type="button" class="entrega-submit-btn carta-admin-agregar" id="carta-admin-agregar">＋ Agregar</button>
+          </div>
+          <div class="subtabs carta-admin-categorias" id="carta-admin-categorias"></div>
+          <p class="carta-admin-resumen" id="carta-admin-resumen"></p>
+          <p id="carta-admin-cargando" class="ofertas-cargando" hidden>Cargando carta...</p>
+          <p id="carta-admin-vacio" class="ofertas-vacio" hidden>No hay productos con ese filtro.</p>
+          <div id="carta-admin-lista"></div>
+        </div>
+
+        <!-- tienda online (domicilios): tabla productos_domicilio -->
+        <div id="admin-seccion-tienda" hidden>
+          <p class="carta-admin-ayuda">
+            Precios de la <b>tienda online</b> (domicilios). Lo que cambies aquí se ve al instante en la tienda
+            (<a href="home.html" target="_blank" rel="noopener">ver tienda</a>).
+          </p>
+          <div class="carta-admin-barra">
+            <input id="tienda-admin-buscar" type="search" placeholder="Buscar producto…" autocomplete="off" />
+            <button type="button" class="entrega-submit-btn carta-admin-agregar" id="tienda-admin-agregar">＋ Agregar</button>
+          </div>
+          <div class="subtabs carta-admin-categorias" id="tienda-admin-categorias"></div>
+          <p class="carta-admin-resumen" id="tienda-admin-resumen"></p>
+          <p id="tienda-admin-cargando" class="ofertas-cargando" hidden>Cargando tienda...</p>
+          <p id="tienda-admin-vacio" class="ofertas-vacio" hidden>No hay productos con ese filtro.</p>
+          <div id="tienda-admin-lista"></div>
+        </div>
       </section>
     </main>
+
+    <!-- editor de un producto (sirve para la carta local y para la tienda online) -->
+    <div class="modal-backdrop" id="editor-modal" hidden>
+      <form class="modal-box carta-editor" id="editor-form" role="dialog" aria-modal="true" aria-labelledby="editor-titulo">
+        <h3 class="modal-titulo" id="editor-titulo">Editar producto</h3>
+        <p class="editor-donde" id="editor-donde"></p>
+        <div class="entrega-field">
+          <label for="editor-nombre">Nombre</label>
+          <input id="editor-nombre" type="text" maxlength="80" />
+        </div>
+        <div class="carta-editor-dos">
+          <div class="entrega-field">
+            <label for="editor-categoria">Categoría</label>
+            <input id="editor-categoria" type="text" list="editor-categorias-lista" maxlength="40" />
+            <datalist id="editor-categorias-lista"></datalist>
+          </div>
+          <div class="entrega-field">
+            <label for="editor-precio">Precio ($)</label>
+            <input id="editor-precio" type="text" inputmode="numeric" placeholder="12.000" />
+          </div>
+        </div>
+        <div class="entrega-field">
+          <label for="editor-sabores">Sabores (separados por coma, opcional)</label>
+          <input id="editor-sabores" type="text" placeholder="Ej: Uva, Fresa Kiwi, Maracuyá" />
+        </div>
+        <div class="entrega-field">
+          <label for="editor-descripcion">Descripción (opcional)</label>
+          <input id="editor-descripcion" type="text" maxlength="120" placeholder="Ej: Soda + Bon Fiest + Limón" />
+        </div>
+        <div class="entrega-field">
+          <label for="editor-imagen">Foto</label>
+          <div class="editor-foto">
+            <img class="carta-editor-vista" id="editor-vista" alt="" hidden />
+            <div class="editor-foto-controles">
+              <select id="editor-imagen"></select>
+              <label class="carta-admin-btn editor-subir" for="editor-archivo">📷 Subir foto nueva</label>
+              <input id="editor-archivo" type="file" accept="image/*" hidden />
+              <span class="editor-subiendo" id="editor-subiendo" hidden>Subiendo foto…</span>
+            </div>
+          </div>
+        </div>
+        <div class="entrega-field">
+          <label for="editor-orden">Orden (los números más bajos salen primero)</label>
+          <input id="editor-orden" type="number" inputmode="numeric" />
+        </div>
+        <div class="carta-editor-checks">
+          <label><input type="checkbox" id="editor-disponible" /> Disponible (si no, sale «Agotado»)</label>
+          <label><input type="checkbox" id="editor-visible" /> Mostrar al público</label>
+          <label><input type="checkbox" id="editor-destacado" /> <span id="editor-destacado-texto">★ Destacado</span></label>
+        </div>
+        <p class="admin-login-error" id="editor-error" role="alert" hidden></p>
+        <div class="carta-editor-botones">
+          <button type="button" class="carta-admin-btn peligro" id="editor-borrar">Borrar</button>
+          <button type="button" class="carta-admin-btn" id="editor-cancelar">Cancelar</button>
+          <button type="submit" class="entrega-submit-btn" id="editor-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
 
     <!-- detalle de un pedido -->
     <div class="modal-backdrop" id="pedido-detalle-modal" hidden>

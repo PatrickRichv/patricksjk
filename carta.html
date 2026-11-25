@@ -2,40 +2,65 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0907" />
+  <meta name="description" content="Carta de Patrick's JK, Bar &amp; Licorería en Popayán: licores, cervezas, aperitivos, bebidas y mecato." />
+  <meta property="og:title" content="Patrick's JK — Carta" />
+  <meta property="og:description" content="Bar &amp; Licorería en Popayán. Más que tragos, buenos momentos." />
+  <meta property="og:image" content="imagenes/logo-optimized.png" />
   <link rel="icon" type="image/png" href="imagenes/logo-optimized.png" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="apple-touch-icon" href="imagenes/logo-optimized.png" />
+  <link rel="preload" as="image" href="imagenes/logo-optimized.png" />
+  <link rel="preconnect" href="https://sjrsytmokrjkqcturbsm.supabase.co" crossorigin />
   <title>Patrick's JK — Carta</title>
-  <link rel="stylesheet" href="css/estilos.css" />
+  <link rel="stylesheet" href="css/carta.css" />
 </head>
-<!-- carta del punto físico, se escanea por QR -->
-<body class="estanco-page">
-  <div class="app">
-    <header class="topbar topbar-apilado">
-      <span class="logo-text">Patrick's JK</span>
+<!-- Carta del punto físico: se abre por QR y desde la app de música (botón «Menú de bebidas»). -->
+<body class="carta-page">
+  <header class="carta-hero">
+    <img class="carta-logo" src="imagenes/logo-optimized.png" alt="Logo de Patrick's JK" width="256" height="256" />
+    <div class="carta-hero-texto">
+      <p class="carta-eyebrow">Bar &amp; Licorería · Popayán</p>
+      <h1 class="carta-titulo">Patrick's JK</h1>
+      <p class="carta-lema">Más que tragos, buenos momentos.</p>
+    </div>
+  </header>
 
-      <div class="subtabs" id="estanco-subtabs"></div>
-    </header>
-
-    <main>
-      <section class="screen">
-        <div class="sec-head">
-          <div>
-            <div class="eyebrow">Punto físico</div>
-            <h1 id="estanco-titulo">Carta</h1>
-          </div>
-          <img class="sec-head-logo" src="imagenes/logo-optimized.png" alt="Patrick's JK" />
-        </div>
-
-        <div id="estanco-lista"></div>
-      </section>
-    </main>
+  <div class="carta-sticky" id="carta-sticky">
+    <label class="carta-buscador">
+      <span class="sr-only">Buscar en la carta</span>
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="carta-buscar" type="search" placeholder="Buscar: aguardiente, Corona, Doritos…" autocomplete="off" enterkeyhint="search" />
+      <button type="button" class="carta-limpiar" id="carta-limpiar" aria-label="Borrar búsqueda" hidden>×</button>
+    </label>
+    <nav class="carta-chips" id="carta-chips" aria-label="Categorías"></nav>
   </div>
 
+  <main class="carta-main" id="carta-main">
+    <noscript><p class="carta-vacio">Activa JavaScript para ver la carta.</p></noscript>
+  </main>
+
+  <p class="carta-vacio" id="carta-sin-resultados" hidden>
+    No encontramos «<span id="carta-termino"></span>». Prueba con otro nombre o pregúntale al mesero.
+  </p>
+
+  <footer class="carta-footer">
+    <img src="imagenes/logo-optimized.png" alt="" width="56" height="56" loading="lazy" />
+    <p>Precios en pesos colombianos (COP) para consumo en el punto físico.</p>
+    <p>¿Quieres pedir a domicilio? <a href="home.html">Ver tienda online</a></p>
+    <p class="carta-footer-firma">Patrick's JK · Bar &amp; Licorería</p>
+  </footer>
+
+  <button type="button" class="carta-arriba" id="carta-arriba" aria-label="Volver arriba" hidden>
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- Los precios se leen de Supabase (tabla productos_local, se edita en el panel).
+       productos-estanco.js queda como respaldo si no hay conexión. -->
+  <script type="module">
+    import { SUPABASE_URL, SUPABASE_ANON_KEY } from './js/config-supabase.js';
+    window.PJK_SUPABASE = { url: SUPABASE_URL, key: SUPABASE_ANON_KEY };
+  </script>
   <script src="js/productos.js"></script>
   <script src="js/productos-estanco.js"></script>
   <script src="js/estanco.js"></script>

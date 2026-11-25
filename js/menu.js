@@ -212,6 +212,7 @@ function retrocederCategoria() {
 function pintarSubtabs() {
   var contenedor = document.getElementById('subtabs');
   if (!contenedor) return;
+  contenedor.innerHTML = '';
   categorias.forEach(function (categoria) {
     var btn = document.createElement('button');
     btn.type = 'button';
@@ -234,6 +235,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   pintarSubtabs();
   renderizarProductos();
+
+  // catalogo-tienda.js avisa cuando llegan precios nuevos desde Supabase
+  document.addEventListener('catalogo-actualizado', function () {
+    if (categorias.indexOf(categoriaActiva) === -1) categoriaActiva = categorias[0];
+    pintarSubtabs();
+    renderizarProductos();
+  });
 
   var input = document.getElementById('search-input');
   if (input) {

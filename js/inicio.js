@@ -52,9 +52,15 @@ function crearTarjetaCarrusel(producto) {
 function pintarCarrusel() {
   var track = document.getElementById('carousel-track');
   if (!track) return;
-  var destacados = productos.filter(function (p) {
+  track.innerHTML = '';
+  var disponibles = productos.filter(function (p) {
     return p.estado === 'disponible';
-  }).slice(0, FEATURED_COUNT);
+  });
+  // primero los que el admin marcó como destacados en el panel, luego el resto
+  var marcados = disponibles.filter(function (p) { return p.destacado; });
+  var destacados = marcados
+    .concat(disponibles.filter(function (p) { return !p.destacado; }))
+    .slice(0, Math.max(FEATURED_COUNT, marcados.length));
 
   destacados.forEach(function (producto) {
     track.appendChild(crearTarjetaCarrusel(producto));
@@ -64,6 +70,7 @@ function pintarCarrusel() {
 function pintarCategorias() {
   var grid = document.getElementById('cat-grid');
   if (!grid) return;
+  grid.innerHTML = '';
   var categoriasDestacadas = categorias.filter(function (c) {
     return c !== 'Bebidas';
   });
@@ -116,6 +123,11 @@ async function actualizarBannerRuleta() {
     if (typeof marcarPromoCheckListo === 'function') marcarPromoCheckListo();
   }
 }
+
+document.addEventListener('catalogo-actualizado', function () {
+  pintarCarrusel();
+  pintarCategorias();
+});
 
 document.addEventListener('DOMContentLoaded', function () {
   pintarCarrusel();

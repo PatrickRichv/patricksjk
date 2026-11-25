@@ -291,6 +291,12 @@ function renderizarSugerencias() {
   });
 }
 
+// catalogo-tienda.js avisa cuando llegan precios nuevos: se recalculan las sugerencias
+document.addEventListener('catalogo-actualizado', function () {
+  productosSugeridosBase = null;
+  renderizarCarrito();
+});
+
 // ---- Modal de "Vaciar carrito" ----
 let elementoConFocoAntesDelModalVaciar = null;
 
